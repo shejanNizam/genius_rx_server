@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Booking Invoice</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background: #f7f7f7;
+        color: #333;
+      }
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #fff;
+        padding: 30px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      }
+      h2 {
+        color: #007bff;
+        border-bottom: 2px solid #007bff;
+        padding-bottom: 10px;
+      }
+      .info-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      .info-table td {
+        padding: 10px 12px;
+        border: 1px solid #e0e0e0;
+      }
+      .info-table td:first-child {
+        font-weight: bold;
+        background: #f0f4ff;
+        width: 40%;
+      }
+      .total-row td {
+        font-size: 16px;
+        font-weight: bold;
+        color: #007bff;
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #888;
+        text-align: center;
+      }
+      .note {
+        margin-top: 20px;
+        padding: 12px;
+        background: #e8f5e9;
+        border-radius: 4px;
+        color: #2e7d32;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Booking Invoice</h2>
+      <p>Hello <strong><%= userName %></strong>,</p>
+      <p>Thank you for your booking! Your payment was successful. Please find your invoice details below. The PDF invoice is also attached to this email.</p>
+
+      <table class="info-table">
+        <tr>
+          <td>Transaction ID</td>
+          <td><%= transactionId %></td>
+        </tr>
+        <tr>
+          <td>Booking Date</td>
+          <td><%= new Date(bookingDate).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }) %></td>
+        </tr>
+        <tr>
+          <td>Tour</td>
+          <td><%= tourTitle %></td>
+        </tr>
+        <tr>
+          <td>Number of Guests</td>
+          <td><%= guestCount %></td>
+        </tr>
+        <tr class="total-row">
+          <td>Total Amount</td>
+          <td>$<%= Number(totalAmount).toFixed(2) %></td>
+        </tr>
+      </table>
+
+      <div class="note">
+        Your booking is confirmed. We look forward to seeing you on the tour!
+      </div>
+
+      <div class="footer">&copy; PH Tour Management. All rights reserved.</div>
+    </div>
+  </body>
+</html>
