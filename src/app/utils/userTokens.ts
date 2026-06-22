@@ -1,8 +1,8 @@
-﻿import httpStatus from "http-status";
+import httpStatus from "http-status";
 import { JwtPayload } from "jsonwebtoken";
 import { configs } from "../config/index";
 import AppError from "../errorHelpers/AppError";
-import { IsActive, IUser } from "../modules/user/user.interface";
+import { IUser } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
 import { genarateToken, verifyToken } from "./jwt";
 
@@ -13,7 +13,6 @@ export const createUserTokens = (user: Partial<IUser>) => {
     role: user.role,
   };
 
-  // genarate access token
   const accessToken = genarateToken(
     jwtPayload,
     configs.jwt_access_secret,
@@ -26,10 +25,7 @@ export const createUserTokens = (user: Partial<IUser>) => {
     configs.jwt_refresh_expires,
   );
 
-  return {
-    accessToken,
-    refreshToken,
-  };
+  return { accessToken, refreshToken };
 };
 
 export const createNewAccessTokenWithRefreshToken = async (
@@ -40,34 +36,27 @@ export const createNewAccessTokenWithRefreshToken = async (
     configs.jwt_refresh_secret,
   ) as JwtPayload;
 
-  const isUserExist = await User.findOne({ email: verifiedRefreshToken.email });
+  const user = await User.findOne({ email: verifiedRefreshToken.email });
 
-  if (!isUserExist) {
+  if (!user) {
     throw new AppError(httpStatus.BAD_REQUEST, "User does not exist");
   }
-  if (
-    isUserExist.isActive === IsActive.BLOCKED ||
-    isUserExist.isActive === IsActive.INACTIVE
-  ) {
-    throw new AppError(
-      httpStatus.BAD_REQUEST,
-      `User is ${isUserExist.isActive}`,
-    );
+  if (user.status === "blocked") {
+    throw new AppError(httpStatus.FORBIDDEN, "Account is blocked");
   }
-  if (isUserExist.isDeleted) {
-    throw new AppError(httpStatus.BAD_REQUEST, "User is deleted");
+  if (user.isDeleted) {
+    throw new AppError(httpStatus.FORBIDDEN, "Account has been deleted");
   }
 
   const jwtPayload = {
-    _id: isUserExist._id?.toString(),
-    email: isUserExist.email,
-    role: isUserExist.role,
+    _id: user._id?.toString(),
+    email: user.email,
+    role: user.role,
   };
-  const accessToken = genarateToken(
+
+  return genarateToken(
     jwtPayload,
     configs.jwt_access_secret,
     configs.jwt_access_expires,
   );
-
-  return accessToken;
 };

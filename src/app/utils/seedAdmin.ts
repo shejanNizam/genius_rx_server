@@ -1,45 +1,45 @@
-﻿/* eslint-disable no-console */
+/* eslint-disable no-console */
 import bcrypt from "bcrypt";
 import { configs } from "../config/index";
-import { IAuthProvider, IUserInitial, Role } from "../modules/user/user.interface";
-
+import { AuthIdentity } from "../modules/auth_identity/auth_identity.model";
+import { AccessStatus, IUserInitial, UserRole } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
 
 export const seedAdmin = async () => {
   try {
-    const isAdminExists = await User.findOne({
-      email: configs.admin_email,
-    });
-
-    if (isAdminExists) {
+    const exists = await User.findOne({ email: configs.admin_email });
+    if (exists) {
       console.log("Admin already exists");
       return;
     }
 
-    console.log("Trying to creating Admin...");
+    console.log("Creating Admin...");
 
-    const hashedAdminPass = await bcrypt.hash(
+    const hashedPassword = await bcrypt.hash(
       configs.admin_password,
       Number(configs.bcrypt_salt_round),
     );
 
-    const authProvider: IAuthProvider = {
-      provider: "credentials",
-      providerId: configs.admin_email,
-    };
-
     const payload: IUserInitial = {
       name: "Admin",
-      role: Role.ADMIN,
+      role: UserRole.admin,
       email: configs.admin_email,
-      password: hashedAdminPass,
-      isVerified: true,
-      auths: [authProvider],
+      password: hashedPassword,
+      isEmailVerified: true,
+      status: "active",
+      accessStatus: AccessStatus.subscribed,
+      isDeleted: false,
     };
 
     const admin = await User.create(payload);
+
+    await AuthIdentity.create({
+      userId: admin._id,
+      provider: "local",
+      providerId: configs.admin_email,
+    });
+
     console.log("Admin created successfully.");
-    console.log(admin);
   } catch (error) {
     console.log(error);
   }

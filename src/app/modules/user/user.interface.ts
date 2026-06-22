@@ -1,37 +1,40 @@
 import { Document, Types } from "mongoose";
 
-export enum IsActive {
-  ACTIVE = "ACTIVE",
-  INACTIVE = "INACTIVE",
-  BLOCKED = "BLOCKED",
-}
-export enum Role {
-  SUPER_ADMIN = "SUPER_ADMIN",
-  ADMIN = "ADMIN",
-  USER = "USER",
-  GUIDE = "GUIDE",
+export enum UserRole {
+  job_seeker = "job_seeker",
+  recruiter = "recruiter",
+  instructor = "instructor",
+  admin = "admin",
+  super_admin = "super_admin",
 }
 
-export interface IAuthProvider {
-  provider: "google" | "credentials"; // Google, Credential(email + password)
-  providerId: string;
+export enum AccessStatus {
+  trial = "trial",
+  subscribed = "subscribed",
+  locked = "locked",
+}
+
+export interface IAvatar {
+  url: string;
+  publicId: string;
 }
 
 export interface IUserInitial {
   _id?: Types.ObjectId;
   name: string;
   email: string;
-  password?: string;
   phone?: string;
-  picture?: string;
-  address?: string;
-  isDeleted?: boolean;
-  isActive?: IsActive;
-  isVerified: boolean;
-  role: Role;
-  auths: IAuthProvider[];
-  bookings?: Types.ObjectId[];
-  guides?: Types.ObjectId[];
+  password?: string;
+  role: UserRole;
+  avatar?: IAvatar;
+  isEmailVerified: boolean;
+  status: "active" | "blocked";
+  blockReason?: string;
+  accessStatus: AccessStatus;
+  currentSubscriptionId?: Types.ObjectId;
+  isDeleted: boolean;
+  deletedAt?: Date;
+  lastLoginAt?: Date;
 }
 
 export type IUser = IUserInitial & Document;

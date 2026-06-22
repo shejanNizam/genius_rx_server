@@ -1,29 +1,12 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { checkAuth } from "../../middlewares/checkAuth";
-import { Role } from "../user/user.interface";
-import { StatsController } from "./stats.controller";
+import { UserRole } from "../user/user.interface";
+import { StatsControllers } from "./stats.controller";
 
 const router = Router();
+const { admin, super_admin } = UserRole;
 
-router.get(
-  "/users",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  StatsController.getUserStats,
-);
-router.get(
-  "/tours",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  StatsController.getTourStats,
-);
-router.get(
-  "/bookings",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  StatsController.getBookingStats,
-);
-router.get(
-  "/payment",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
-  StatsController.getPaymentStats,
-);
+router.get("/overview", checkAuth(admin, super_admin), StatsControllers.getOverviewStats);
+router.get("/earnings", checkAuth(admin, super_admin), StatsControllers.getEarningsStats);
 
 export const StatsRoutes = router;

@@ -1,4 +1,4 @@
-﻿import bcrypt from "bcrypt";
+import bcrypt from "bcrypt";
 import { Types } from "mongoose";
 import passport from "passport";
 import {
@@ -8,70 +8,41 @@ import {
 } from "passport-google-oauth20";
 import { Strategy as LocalStrategy } from "passport-local";
 import { configs } from "./index";
-import { IsActive, IUser, Role } from "../modules/user/user.interface";
+import { AuthIdentity } from "../modules/auth_identity/auth_identity.model";
+import { IUser, UserRole } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
 
-//  for credential login
 passport.use(
   new LocalStrategy(
-    {
-      usernameField: "email",
-      passwordField: "password",
-    },
+    { usernameField: "email", passwordField: "password" },
     async (email: string, password: string, done) => {
       try {
-        const isUserExist = await User.findOne({ email }).select("+password");
-        if (!isUserExist) {
+        const user = await User.findOne({ email }).select("+password");
+        if (!user) {
           return done(null, false, { message: "User does not exist" });
         }
-
-        // add some validation
-        if (!isUserExist.isVerified) {
-          // throw new AppError(httpStatus.BAD_REQUEST, "User is not verified")
-          return done("User is not verified");
+        if (!user.isEmailVerified) {
+          return done(null, false, { message: "Email is not verified" });
         }
-
-        if (
-          isUserExist.isActive === IsActive.BLOCKED ||
-          isUserExist.isActive === IsActive.INACTIVE
-        ) {
-          // throw new AppError(httpStatus.BAD_REQUEST, `User is ${isUserExist.isActive}`)
-          return done(`User is ${isUserExist.isActive}`);
+        if (user.status === "blocked") {
+          return done(null, false, { message: "Account is blocked" });
         }
-
-        if (isUserExist.isDeleted) {
-          return done(null, false, {
-            message: "This account has been deleted.",
-          });
+        if (user.isDeleted) {
+          return done(null, false, { message: "Account has been deleted" });
         }
-
-        const isGoogleAuthenticated = isUserExist.auths.some(
-          (providerObjects) => providerObjects.provider === "google",
-        );
-
-        if (isGoogleAuthenticated && !isUserExist.password) {
+        if (!user.password) {
           return done(null, false, {
             message:
-              "You authenticated through Google. Login with Google first, then set a password to use credentials.",
+              "No password set. Login with Google first, then set a password.",
           });
         }
 
-        if (!isUserExist.password) {
-          return done(null, false, {
-            message: "No password set. Please login with Google first.",
-          });
-        }
-
-        const isPasswordMatched = await bcrypt.compare(
-          password,
-          isUserExist.password,
-        );
-
-        if (!isPasswordMatched) {
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
           return done(null, false, { message: "Password does not match" });
         }
 
-        return done(null, isUserExist);
+        return done(null, user);
       } catch (error) {
         return done(error as Error);
       }
@@ -79,7 +50,6 @@ passport.use(
   ),
 );
 
-//  for google login
 passport.use(
   new GoogleStrategy(
     {
@@ -88,69 +58,58 @@ passport.use(
       callbackURL: configs.google_callback_url,
     },
     async (
-      accessToken: string,
-      refreshToken: string,
+      _accessToken: string,
+      _refreshToken: string,
       profile: Profile,
       done: VerifyCallback,
     ) => {
       try {
         const email = profile.emails?.[0]?.value;
-        if (!email) {
-          return done(null, false, { message: "No email found!" });
+        if (!email) return done(null, false, { message: "No email from Google" });
+
+        const existingIdentity = await AuthIdentity.findOne({
+          provider: "google",
+          providerId: profile.id,
+        });
+
+        if (existingIdentity) {
+          const user = await User.findById(existingIdentity.userId);
+          if (!user) return done(null, false, { message: "User not found" });
+          if (user.status === "blocked") {
+            return done(null, false, { message: "Account is blocked" });
+          }
+          if (user.isDeleted) {
+            return done(null, false, { message: "Account has been deleted" });
+          }
+          return done(null, user);
         }
 
-        let isUserExist = await User.findOne({ email });
+        let user = await User.findOne({ email });
 
-        // add some validation
-        if (isUserExist && !isUserExist.isVerified) {
-          return done(null, false, { message: "User is not verified" });
-        }
-
-        if (
-          isUserExist &&
-          (isUserExist.isActive === IsActive.BLOCKED ||
-            isUserExist.isActive === IsActive.INACTIVE)
-        ) {
-          done(`User is ${isUserExist.isActive}`);
-        }
-
-        if (isUserExist && isUserExist.isDeleted) {
-          return done(null, false, { message: "User is deleted" });
-        }
-
-        if (!isUserExist) {
-          isUserExist = await User.create({
+        if (user) {
+          if (user.status === "blocked") {
+            return done(null, false, { message: "Account is blocked" });
+          }
+          if (user.isDeleted) {
+            return done(null, false, { message: "Account has been deleted" });
+          }
+        } else {
+          user = await User.create({
             email,
             name: profile.displayName,
-            picture: profile.photos?.[0]?.value || "",
-            role: Role.USER,
-            isVerified: true,
-            auths: [
-              {
-                provider: "google",
-                providerId: profile.id,
-              },
-            ],
+            avatar: { url: profile.photos?.[0]?.value || "", publicId: "" },
+            role: UserRole.job_seeker,
+            isEmailVerified: true,
           });
-        } else {
-          if (isUserExist.isDeleted) {
-            return done(null, false, { message: "Account has been deleted." });
-          }
-
-          // if user exists but didn't use Google before, link the provider
-          const alreadyLinked = isUserExist.auths.some(
-            (a) => a.provider === "google",
-          );
-          if (!alreadyLinked) {
-            isUserExist.auths.push({
-              provider: "google",
-              providerId: profile.id,
-            });
-            await isUserExist.save();
-          }
         }
 
-        return done(null, isUserExist);
+        await AuthIdentity.create({
+          userId: user._id,
+          provider: "google",
+          providerId: profile.id,
+        });
+
+        return done(null, user);
       } catch (error) {
         return done(error);
       }

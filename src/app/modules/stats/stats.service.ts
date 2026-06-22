@@ -1,626 +1,240 @@
-﻿import { Booking } from "../booking/booking.model";
-import { PAYMENT_STATUS } from "../payment/payment.interface";
-import { Payment } from "../payment/payment.model";
-import { Tour } from "../tour/tour.model";
-import { IsActive } from "../user/user.interface";
+import { UserRole } from "../user/user.interface";
 import { User } from "../user/user.model";
+import { Job } from "../job/job.model";
+import { Transaction } from "../transaction/transaction.model";
 
-const getDateRanges = () => {
+const getChangePercent = (current: number, previous: number): number => {
+  if (previous === 0) return current > 0 ? 100 : 0;
+  return parseFloat((((current - previous) / previous) * 100).toFixed(1));
+};
+
+const getMonthBounds = () => {
   const now = new Date();
-  return {
-    sevenDaysAgo: new Date(new Date().setDate(now.getDate() - 7)),
-    thirtyDaysAgo: new Date(new Date().setDate(now.getDate() - 30)),
-  };
+  const startThisMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+  const startLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  return { startThisMonth, startLastMonth };
 };
 
-const getUserStats = async () => {
-  const { sevenDaysAgo, thirtyDaysAgo } = getDateRanges();
-
-  const totalUsersPromise = User.countDocuments();
-  const totalActiveUsersPromise = User.countDocuments({
-    isActive: IsActive.ACTIVE,
-  });
-  const totalInActiveUsersPromise = User.countDocuments({
-    isActive: IsActive.INACTIVE,
-  });
-  const totalBlockedUsersPromise = User.countDocuments({
-    isActive: IsActive.BLOCKED,
-  });
-  const newUsersInLast7DaysPromise = User.countDocuments({
-    createdAt: { $gte: sevenDaysAgo },
-  });
-  const newUsersInLast30DaysPromise = User.countDocuments({
-    createdAt: { $gte: thirtyDaysAgo },
-  });
-  const usersByRolePromise = User.aggregate([
-    {
-      $group: {
-        _id: "$role",
-        count: { $sum: 1 },
-      },
-    },
-  ]);
+const getOverviewStats = async () => {
+  const { startThisMonth, startLastMonth } = getMonthBounds();
 
   const [
-    totalUsers,
-    totalActiveUsers,
-    totalInActiveUsers,
-    totalBlockedUsers,
-    newUsersInLast7Days,
-    newUsersInLast30Days,
-    usersByRole,
+    totalUsersByRole,
+    newUsersThisMonthByRole,
+    newUsersLastMonthByRole,
+    allTimeEarnings,
+    thisMonthEarnings,
+    lastMonthEarnings,
+    totalJobs,
+    newJobsThisMonth,
+    newJobsLastMonth,
+    recentUsers,
   ] = await Promise.all([
-    totalUsersPromise,
-    totalActiveUsersPromise,
-    totalInActiveUsersPromise,
-    totalBlockedUsersPromise,
-    newUsersInLast7DaysPromise,
-    newUsersInLast30DaysPromise,
-    usersByRolePromise,
+    // Total users grouped by role
+    User.aggregate([
+      { $match: { isDeleted: false } },
+      { $group: { _id: "$role", count: { $sum: 1 } } },
+    ]),
+    // New users this month grouped by role
+    User.aggregate([
+      { $match: { isDeleted: false, createdAt: { $gte: startThisMonth } } },
+      { $group: { _id: "$role", count: { $sum: 1 } } },
+    ]),
+    // New users last month grouped by role
+    User.aggregate([
+      {
+        $match: {
+          isDeleted: false,
+          createdAt: { $gte: startLastMonth, $lt: startThisMonth },
+        },
+      },
+      { $group: { _id: "$role", count: { $sum: 1 } } },
+    ]),
+    // All-time successful transaction total
+    Transaction.aggregate([
+      { $match: { status: "success" } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $toDouble: "$amount" } },
+        },
+      },
+    ]),
+    // This month successful transaction total
+    Transaction.aggregate([
+      { $match: { status: "success", createdAt: { $gte: startThisMonth } } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $toDouble: "$amount" } },
+        },
+      },
+    ]),
+    // Last month successful transaction total
+    Transaction.aggregate([
+      {
+        $match: {
+          status: "success",
+          createdAt: { $gte: startLastMonth, $lt: startThisMonth },
+        },
+      },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: { $toDouble: "$amount" } },
+        },
+      },
+    ]),
+    // Total active jobs
+    Job.countDocuments({ isDeleted: false }),
+    // New jobs posted this month
+    Job.countDocuments({ isDeleted: false, createdAt: { $gte: startThisMonth } }),
+    // New jobs posted last month
+    Job.countDocuments({
+      isDeleted: false,
+      createdAt: { $gte: startLastMonth, $lt: startThisMonth },
+    }),
+    // 10 most recent users
+    User.find({ isDeleted: false })
+      .sort({ createdAt: -1 })
+      .limit(10)
+      .select("name email role status accessStatus avatar createdAt"),
   ]);
 
+  // Build lookup maps by role
+  const toRoleMap = (arr: { _id: string; count: number }[]) =>
+    Object.fromEntries(arr.map(({ _id, count }) => [_id, count]));
+
+  const totalMap = toRoleMap(totalUsersByRole);
+  const thisMonthMap = toRoleMap(newUsersThisMonthByRole);
+  const lastMonthMap = toRoleMap(newUsersLastMonthByRole);
+
+  const totalUsersCount = Object.values(totalMap).reduce((a, b) => a + b, 0);
+  const newTotalThisMonth = Object.values(thisMonthMap).reduce((a, b) => a + b, 0);
+  const newTotalLastMonth = Object.values(lastMonthMap).reduce((a, b) => a + b, 0);
+
+  const totalEarningsAmount = allTimeEarnings[0]?.total ?? 0;
+  const thisMonthEarningsAmount = thisMonthEarnings[0]?.total ?? 0;
+  const lastMonthEarningsAmount = lastMonthEarnings[0]?.total ?? 0;
+
   return {
-    totalUsers,
-    totalActiveUsers,
-    totalInActiveUsers,
-    totalBlockedUsers,
-    newUsersInLast7Days,
-    newUsersInLast30Days,
-    usersByRole,
+    totalUsers: {
+      count: totalUsersCount,
+      changePercent: getChangePercent(newTotalThisMonth, newTotalLastMonth),
+    },
+    totalJobSeekers: {
+      count: totalMap[UserRole.job_seeker] ?? 0,
+      changePercent: getChangePercent(
+        thisMonthMap[UserRole.job_seeker] ?? 0,
+        lastMonthMap[UserRole.job_seeker] ?? 0,
+      ),
+    },
+    totalRecruiters: {
+      count: totalMap[UserRole.recruiter] ?? 0,
+      changePercent: getChangePercent(
+        thisMonthMap[UserRole.recruiter] ?? 0,
+        lastMonthMap[UserRole.recruiter] ?? 0,
+      ),
+    },
+    totalInstructors: {
+      count: totalMap[UserRole.instructor] ?? 0,
+      changePercent: getChangePercent(
+        thisMonthMap[UserRole.instructor] ?? 0,
+        lastMonthMap[UserRole.instructor] ?? 0,
+      ),
+    },
+    totalEarnings: {
+      amount: parseFloat(totalEarningsAmount.toFixed(2)),
+      changePercent: getChangePercent(thisMonthEarningsAmount, lastMonthEarningsAmount),
+    },
+    totalJobs: {
+      count: totalJobs,
+      changePercent: getChangePercent(newJobsThisMonth, newJobsLastMonth),
+    },
+    recentUsers,
   };
 };
 
-const getTourStats = async () => {
-  const totalTourPromise = Tour.countDocuments();
-
-  const totalTourByTourTypePromise = Tour.aggregate([
-    {
-      $lookup: {
-        from: "tourtypes",
-        localField: "tourType",
-        foreignField: "_id",
-        as: "type",
-      },
-    },
-    { $unwind: "$type" },
-    {
-      $group: {
-        _id: "$type.name",
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const avgTourCostPromise = Tour.aggregate([
-    {
-      $group: {
-        _id: null,
-        avgCostFrom: { $avg: "$costFrom" },
-      },
-    },
-  ]);
-
-  const totalTourByDivisionPromise = Tour.aggregate([
-    {
-      $lookup: {
-        from: "divisions",
-        localField: "division",
-        foreignField: "_id",
-        as: "division",
-      },
-    },
-    { $unwind: "$division" },
-    {
-      $group: {
-        _id: "$division.name",
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const totalHighestBookedTourPromise = Booking.aggregate([
-    {
-      $group: {
-        _id: "$tour",
-        bookingCount: { $sum: 1 },
-      },
-    },
-    { $sort: { bookingCount: -1 } },
-    { $limit: 5 },
-    {
-      $lookup: {
-        from: "tours",
-        let: { tourId: "$_id" },
-        pipeline: [
-          {
-            $match: { $expr: { $eq: ["$_id", "$$tourId"] } },
-          },
-        ],
-        as: "tour",
-      },
-    },
-    { $unwind: "$tour" },
-    {
-      $project: {
-        bookingCount: 1,
-        "tour.title": 1,
-        "tour.slug": 1,
-      },
-    },
-  ]);
+const getEarningsStats = async () => {
+  const { startThisMonth, startLastMonth } = getMonthBounds();
 
   const [
-    totalTour,
-    totalTourByTourType,
-    avgTourCostResult,
-    totalTourByDivision,
-    totalHighestBookedTour,
+    allTimeSuccessful,
+    thisMonthSuccessful,
+    lastMonthSuccessful,
+    allPending,
+    thisMonthPending,
+    lastMonthPending,
   ] = await Promise.all([
-    totalTourPromise,
-    totalTourByTourTypePromise,
-    avgTourCostPromise,
-    totalTourByDivisionPromise,
-    totalHighestBookedTourPromise,
+    // All-time successful total
+    Transaction.aggregate([
+      { $match: { status: "success" } },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
+    // This month successful
+    Transaction.aggregate([
+      { $match: { status: "success", createdAt: { $gte: startThisMonth } } },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
+    // Last month successful
+    Transaction.aggregate([
+      {
+        $match: {
+          status: "success",
+          createdAt: { $gte: startLastMonth, $lt: startThisMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
+    // All-time pending total
+    Transaction.aggregate([
+      { $match: { status: "pending" } },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
+    // This month pending
+    Transaction.aggregate([
+      { $match: { status: "pending", createdAt: { $gte: startThisMonth } } },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
+    // Last month pending
+    Transaction.aggregate([
+      {
+        $match: {
+          status: "pending",
+          createdAt: { $gte: startLastMonth, $lt: startThisMonth },
+        },
+      },
+      { $group: { _id: null, total: { $sum: { $toDouble: "$amount" } } } },
+    ]),
   ]);
 
+  const totalEarnings = allTimeSuccessful[0]?.total ?? 0;
+  const thisMonthAmount = thisMonthSuccessful[0]?.total ?? 0;
+  const lastMonthAmount = lastMonthSuccessful[0]?.total ?? 0;
+  const pendingTotal = allPending[0]?.total ?? 0;
+  const pendingThisMonth = thisMonthPending[0]?.total ?? 0;
+  const pendingLastMonth = lastMonthPending[0]?.total ?? 0;
+
   return {
-    totalTour,
-    totalTourByTourType,
-    avgTourCost: avgTourCostResult[0]?.avgCostFrom ?? 0,
-    totalTourByDivision,
-    totalHighestBookedTour,
+    // All-time collected revenue; % change = this month vs last month addition
+    totalEarnings: {
+      amount: parseFloat(totalEarnings.toFixed(2)),
+      changePercent: getChangePercent(thisMonthAmount, lastMonthAmount),
+    },
+    // This month's collected revenue (shown as "Withdrawal amount" in the design)
+    thisMonthEarnings: {
+      amount: parseFloat(thisMonthAmount.toFixed(2)),
+      changePercent: getChangePercent(thisMonthAmount, lastMonthAmount),
+    },
+    // Outstanding pending transactions
+    pendingAmount: {
+      amount: parseFloat(pendingTotal.toFixed(2)),
+      changePercent: getChangePercent(pendingThisMonth, pendingLastMonth),
+    },
   };
 };
 
-const getBookingStats = async () => {
-  const { sevenDaysAgo, thirtyDaysAgo } = getDateRanges();
-
-  const totalBookingPromise = Booking.countDocuments();
-
-  const totalBookingByStatusPromise = Booking.aggregate([
-    {
-      $group: {
-        _id: "$status",
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const bookingsPerTourPromise = Booking.aggregate([
-    {
-      $group: {
-        _id: "$tour",
-        bookingCount: { $sum: 1 },
-      },
-    },
-    { $sort: { bookingCount: -1 } },
-    { $limit: 10 },
-    {
-      $lookup: {
-        from: "tours",
-        localField: "_id",
-        foreignField: "_id",
-        as: "tour",
-      },
-    },
-    { $unwind: "$tour" },
-    {
-      $project: {
-        _id: 1,
-        bookingCount: 1,
-        "tour.title": 1,
-        "tour.slug": 1,
-      },
-    },
-  ]);
-
-  const avgGuestCountPromise = Booking.aggregate([
-    {
-      $group: {
-        _id: null,
-        avgGuestCount: { $avg: "$guestCount" },
-      },
-    },
-  ]);
-
-  const bookingsLast7DaysPromise = Booking.countDocuments({
-    createdAt: { $gte: sevenDaysAgo },
-  });
-  const bookingsLast30DaysPromise = Booking.countDocuments({
-    createdAt: { $gte: thirtyDaysAgo },
-  });
-  const totalBookingByUniqueUsersPromise = Booking.distinct("user").then(
-    (users) => users.length,
-  );
-
-  const [
-    totalBooking,
-    totalBookingByStatus,
-    bookingsPerTour,
-    avgGuestCountResult,
-    bookingsLast7Days,
-    bookingsLast30Days,
-    totalBookingByUniqueUsers,
-  ] = await Promise.all([
-    totalBookingPromise,
-    totalBookingByStatusPromise,
-    bookingsPerTourPromise,
-    avgGuestCountPromise,
-    bookingsLast7DaysPromise,
-    bookingsLast30DaysPromise,
-    totalBookingByUniqueUsersPromise,
-  ]);
-
-  return {
-    totalBooking,
-    totalBookingByStatus,
-    bookingsPerTour,
-    avgGuestCountPerBooking: avgGuestCountResult[0]?.avgGuestCount ?? 0,
-    bookingsLast7Days,
-    bookingsLast30Days,
-    totalBookingByUniqueUsers,
-  };
+export const StatsServices = {
+  getOverviewStats,
+  getEarningsStats,
 };
-
-const getPaymentStats = async () => {
-  const totalPaymentPromise = Payment.countDocuments();
-
-  const totalPaymentByStatusPromise = Payment.aggregate([
-    {
-      $group: {
-        _id: "$status",
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const totalRevenuePromise = Payment.aggregate([
-    { $match: { status: PAYMENT_STATUS.PAID } },
-    {
-      $group: {
-        _id: null,
-        totalRevenue: { $sum: "$amount" },
-      },
-    },
-  ]);
-
-  const avgPaymentAmountPromise = Payment.aggregate([
-    {
-      $group: {
-        _id: null,
-        avgPaymentAmount: { $avg: "$amount" },
-      },
-    },
-  ]);
-
-  const paymentGatewayDataPromise = Payment.aggregate([
-    {
-      $group: {
-        _id: { $ifNull: ["$paymentGatewayData.status", "UNKNOWN"] },
-        count: { $sum: 1 },
-      },
-    },
-  ]);
-
-  const [
-    totalPayment,
-    totalPaymentByStatus,
-    totalRevenueResult,
-    avgPaymentAmountResult,
-    paymentGatewayData,
-  ] = await Promise.all([
-    totalPaymentPromise,
-    totalPaymentByStatusPromise,
-    totalRevenuePromise,
-    avgPaymentAmountPromise,
-    paymentGatewayDataPromise,
-  ]);
-
-  return {
-    totalPayment,
-    totalPaymentByStatus,
-    totalRevenue: totalRevenueResult[0]?.totalRevenue ?? 0,
-    avgPaymentAmount: avgPaymentAmountResult[0]?.avgPaymentAmount ?? 0,
-    paymentGatewayData,
-  };
-};
-
-export const StatsService = {
-  getUserStats,
-  getTourStats,
-  getBookingStats,
-  getPaymentStats,
-};
-
-// advanced
-
-// import { Booking } from "../booking/booking.model";
-// import { PAYMENT_STATUS } from "../payment/payment.interface";
-// import { Payment } from "../payment/payment.model";
-// import { Tour } from "../tour/tour.model";
-// import { IsActive } from "../user/user.interface";
-// import { User } from "../user/user.model";
-
-// const getDateRanges = () => {
-//   const now = new Date();
-//   return {
-//     sevenDaysAgo: new Date(new Date().setDate(now.getDate() - 7)),
-//     thirtyDaysAgo: new Date(new Date().setDate(now.getDate() - 30)),
-//   };
-// };
-
-// const getUserStats = async () => {
-//   const { sevenDaysAgo, thirtyDaysAgo } = getDateRanges();
-
-//   const [
-//     totalUsers,
-//     totalActiveUsers,
-//     totalInActiveUsers,
-//     totalBlockedUsers,
-//     newUsersInLast7Days,
-//     newUsersInLast30Days,
-//     usersByRole,
-//   ] = await Promise.all([
-//     User.countDocuments(),
-//     User.countDocuments({ isActive: IsActive.ACTIVE }),
-//     User.countDocuments({ isActive: IsActive.INACTIVE }),
-//     User.countDocuments({ isActive: IsActive.BLOCKED }),
-//     User.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-//     User.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
-//     User.aggregate([
-//       {
-//         $group: {
-//           _id: "$role",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-//   ]);
-
-//   return {
-//     totalUsers,
-//     totalActiveUsers,
-//     totalInActiveUsers,
-//     totalBlockedUsers,
-//     newUsersInLast7Days,
-//     newUsersInLast30Days,
-//     usersByRole,
-//   };
-// };
-
-// const getTourStats = async () => {
-//   const [
-//     totalTour,
-//     totalTourByTourType,
-//     avgTourCostResult,
-//     totalTourByDivision,
-//     totalHighestBookedTour,
-//   ] = await Promise.all([
-//     Tour.countDocuments(),
-
-//     Tour.aggregate([
-//       {
-//         $lookup: {
-//           from: "tourtypes",
-//           localField: "tourType",
-//           foreignField: "_id",
-//           as: "type",
-//         },
-//       },
-//       { $unwind: "$type" },
-//       {
-//         $group: {
-//           _id: "$type.name",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-
-//     Tour.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           avgCostFrom: { $avg: "$costFrom" },
-//         },
-//       },
-//     ]),
-
-//     Tour.aggregate([
-//       {
-//         $lookup: {
-//           from: "divisions",
-//           localField: "division",
-//           foreignField: "_id",
-//           as: "division",
-//         },
-//       },
-//       { $unwind: "$division" },
-//       {
-//         $group: {
-//           _id: "$division.name",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-
-//     Booking.aggregate([
-//       {
-//         $group: {
-//           _id: "$tour",
-//           bookingCount: { $sum: 1 },
-//         },
-//       },
-//       { $sort: { bookingCount: -1 } },
-//       { $limit: 5 },
-//       {
-//         $lookup: {
-//           from: "tours",
-//           let: { tourId: "$_id" },
-//           pipeline: [
-//             {
-//               $match: { $expr: { $eq: ["$_id", "$$tourId"] } },
-//             },
-//           ],
-//           as: "tour",
-//         },
-//       },
-//       { $unwind: "$tour" },
-//       {
-//         $project: {
-//           bookingCount: 1,
-//           "tour.title": 1,
-//           "tour.slug": 1,
-//         },
-//       },
-//     ]),
-//   ]);
-
-//   return {
-//     totalTour,
-//     totalTourByTourType,
-//     avgTourCost: avgTourCostResult[0]?.avgCostFrom ?? 0,
-//     totalTourByDivision,
-//     totalHighestBookedTour,
-//   };
-// };
-
-// const getBookingStats = async () => {
-//   const { sevenDaysAgo, thirtyDaysAgo } = getDateRanges();
-
-//   const [
-//     totalBooking,
-//     totalBookingByStatus,
-//     bookingsPerTour,
-//     avgGuestCountResult,
-//     bookingsLast7Days,
-//     bookingsLast30Days,
-//     totalBookingByUniqueUsers,
-//   ] = await Promise.all([
-//     Booking.countDocuments(),
-
-//     Booking.aggregate([
-//       {
-//         $group: {
-//           _id: "$status",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-
-//     Booking.aggregate([
-//       {
-//         $group: {
-//           _id: "$tour",
-//           bookingCount: { $sum: 1 },
-//         },
-//       },
-//       { $sort: { bookingCount: -1 } },
-//       { $limit: 10 },
-//       {
-//         $lookup: {
-//           from: "tours",
-//           localField: "_id",
-//           foreignField: "_id",
-//           as: "tour",
-//         },
-//       },
-//       { $unwind: "$tour" },
-//       {
-//         $project: {
-//           _id: 1,
-//           bookingCount: 1,
-//           "tour.title": 1,
-//           "tour.slug": 1,
-//         },
-//       },
-//     ]),
-
-//     Booking.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           avgGuestCount: { $avg: "$guestCount" },
-//         },
-//       },
-//     ]),
-
-//     Booking.countDocuments({ createdAt: { $gte: sevenDaysAgo } }),
-//     Booking.countDocuments({ createdAt: { $gte: thirtyDaysAgo } }),
-
-//     Booking.distinct("user").then((users) => users.length),
-//   ]);
-
-//   return {
-//     totalBooking,
-//     totalBookingByStatus,
-//     bookingsPerTour,
-//     avgGuestCountPerBooking: avgGuestCountResult[0]?.avgGuestCount ?? 0,
-//     bookingsLast7Days,
-//     bookingsLast30Days,
-//     totalBookingByUniqueUsers,
-//   };
-// };
-
-// const getPaymentStats = async () => {
-//   const [
-//     totalPayment,
-//     totalPaymentByStatus,
-//     totalRevenueResult,
-//     avgPaymentAmountResult,
-//     paymentGatewayData,
-//   ] = await Promise.all([
-//     Payment.countDocuments(),
-
-//     Payment.aggregate([
-//       {
-//         $group: {
-//           _id: "$status",
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-
-//     Payment.aggregate([
-//       { $match: { status: PAYMENT_STATUS.PAID } },
-//       {
-//         $group: {
-//           _id: null,
-//           totalRevenue: { $sum: "$amount" },
-//         },
-//       },
-//     ]),
-
-//     Payment.aggregate([
-//       {
-//         $group: {
-//           _id: null,
-//           avgPaymentAmount: { $avg: "$amount" },
-//         },
-//       },
-//     ]),
-
-//     Payment.aggregate([
-//       {
-//         $group: {
-//           _id: { $ifNull: ["$paymentGatewayData.status", "UNKNOWN"] },
-//           count: { $sum: 1 },
-//         },
-//       },
-//     ]),
-//   ]);
-
-//   return {
-//     totalPayment,
-//     totalPaymentByStatus,
-//     totalRevenue: totalRevenueResult[0]?.totalRevenue ?? 0,
-//     avgPaymentAmount: avgPaymentAmountResult[0]?.avgPaymentAmount ?? 0,
-//     paymentGatewayData,
-//   };
-// };
-
-// export const StatsService = {
-//   getUserStats,
-//   getTourStats,
-//   getBookingStats,
-//   getPaymentStats,
-// };

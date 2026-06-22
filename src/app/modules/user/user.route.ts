@@ -1,8 +1,8 @@
-﻿import { Router } from "express";
+import { Router } from "express";
 import { checkAuth } from "../../middlewares/checkAuth";
 import validateRequest from "../../middlewares/validateRequest";
 import { UserControllers } from "./user.controller";
-import { Role } from "./user.interface";
+import { UserRole } from "./user.interface";
 import { createUserZodSchema, updateUserZodSchema } from "./user.validation";
 
 const router = Router();
@@ -12,22 +12,36 @@ router.post(
   validateRequest(createUserZodSchema),
   UserControllers.createUser,
 );
+
 router.get(
   "/all-users",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  checkAuth(UserRole.admin, UserRole.super_admin),
   UserControllers.getAllUsers,
 );
-router.get("/me", checkAuth(...Object.values(Role)), UserControllers.getMe);
+
+router.get(
+  "/me",
+  checkAuth(...Object.values(UserRole)),
+  UserControllers.getMe,
+);
+
 router.get(
   "/:id",
-  checkAuth(Role.ADMIN, Role.SUPER_ADMIN),
+  checkAuth(UserRole.admin, UserRole.super_admin),
   UserControllers.getSingleUser,
 );
+
 router.patch(
   "/:id",
   validateRequest(updateUserZodSchema),
-  checkAuth(...Object.values(Role)),
+  checkAuth(...Object.values(UserRole)),
   UserControllers.updateUser,
+);
+
+router.delete(
+  "/:id",
+  checkAuth(UserRole.admin, UserRole.super_admin),
+  UserControllers.deleteUser,
 );
 
 export const UserRoutes = router;

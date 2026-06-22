@@ -2,7 +2,7 @@
 import passport from "passport";
 import { configs } from "../../config/index";
 import { checkAuth } from "../../middlewares/checkAuth";
-import { Role } from "../user/user.interface";
+import { UserRole } from "../user/user.interface";
 import { AuthControllers } from "./auth.controller";
 
 const router = Router();
@@ -12,18 +12,18 @@ router.post("/refresh-token", AuthControllers.getNewAccessToken);
 router.post("/logout", AuthControllers.logout);
 router.post(
   "/change-password",
-  checkAuth(...Object.values(Role)),
+  checkAuth(...(Object.values(UserRole) as string[])),
   AuthControllers.changePassword,
 );
 router.post(
   "/set-password",
-  checkAuth(...Object.values(Role)),
+  checkAuth(...(Object.values(UserRole) as string[])),
   AuthControllers.setPassword,
 );
 router.post("/forgot-password", AuthControllers.forgotPassword);
 router.post(
   "/reset-password",
-  checkAuth(...Object.values(Role)),
+  checkAuth(...(Object.values(UserRole) as string[])),
   AuthControllers.resetPassword,
 );
 

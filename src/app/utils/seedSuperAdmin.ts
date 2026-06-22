@@ -1,44 +1,45 @@
-﻿/* eslint-disable no-console */
+/* eslint-disable no-console */
 import bcrypt from "bcrypt";
 import { configs } from "../config/index";
-import { IAuthProvider, IUserInitial, Role } from "../modules/user/user.interface";
+import { AuthIdentity } from "../modules/auth_identity/auth_identity.model";
+import { AccessStatus, IUserInitial, UserRole } from "../modules/user/user.interface";
 import { User } from "../modules/user/user.model";
 
 export const seedSuperAdmin = async () => {
   try {
-    const isSuperAdminExists = await User.findOne({
-      email: configs.super_admin_email,
-    });
-
-    if (isSuperAdminExists) {
+    const exists = await User.findOne({ email: configs.super_admin_email });
+    if (exists) {
       console.log("Super Admin already exists");
       return;
     }
 
-    console.log("Trying to creating Super Admin...");
+    console.log("Creating Super Admin...");
 
-    const hashedSuperAdminPass = await bcrypt.hash(
+    const hashedPassword = await bcrypt.hash(
       configs.super_admin_password,
       Number(configs.bcrypt_salt_round),
     );
 
-    const authProvider: IAuthProvider = {
-      provider: "credentials",
-      providerId: configs.super_admin_email,
-    };
-
     const payload: IUserInitial = {
       name: "Super Admin",
-      role: Role.SUPER_ADMIN,
+      role: UserRole.super_admin,
       email: configs.super_admin_email,
-      password: hashedSuperAdminPass,
-      isVerified: true,
-      auths: [authProvider],
+      password: hashedPassword,
+      isEmailVerified: true,
+      status: "active",
+      accessStatus: AccessStatus.subscribed,
+      isDeleted: false,
     };
 
     const superAdmin = await User.create(payload);
+
+    await AuthIdentity.create({
+      userId: superAdmin._id,
+      provider: "local",
+      providerId: configs.super_admin_email,
+    });
+
     console.log("Super Admin created successfully.");
-    console.log(superAdmin);
   } catch (error) {
     console.log(error);
   }

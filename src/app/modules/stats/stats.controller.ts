@@ -1,51 +1,26 @@
-﻿import { Request, Response } from "express";
+import httpStatus from "http-status";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
-import { StatsService } from "./stats.service";
+import { StatsServices } from "./stats.service";
 
-const getUserStats = catchAsync(async (_req: Request, res: Response) => {
-  const stats = await StatsService.getUserStats();
+const getOverviewStats = catchAsync(async (_req, res) => {
+  const data = await StatsServices.getOverviewStats();
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
-    message: "User stats fetched successfully",
-    data: stats,
+    message: "Dashboard overview stats retrieved",
+    data,
   });
 });
 
-const getTourStats = catchAsync(async (_req: Request, res: Response) => {
-  const stats = await StatsService.getTourStats();
+const getEarningsStats = catchAsync(async (_req, res) => {
+  const data = await StatsServices.getEarningsStats();
   sendResponse(res, {
-    statusCode: 200,
+    statusCode: httpStatus.OK,
     success: true,
-    message: "Tour stats fetched successfully",
-    data: stats,
+    message: "Earnings stats retrieved",
+    data,
   });
 });
 
-const getBookingStats = catchAsync(async (_req: Request, res: Response) => {
-  const stats = await StatsService.getBookingStats();
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: "Booking stats fetched successfully",
-    data: stats,
-  });
-});
-
-const getPaymentStats = catchAsync(async (_req: Request, res: Response) => {
-  const stats = await StatsService.getPaymentStats();
-  sendResponse(res, {
-    statusCode: 200,
-    success: true,
-    message: "Payment stats fetched successfully",
-    data: stats,
-  });
-});
-
-export const StatsController = {
-  getUserStats,
-  getTourStats,
-  getBookingStats,
-  getPaymentStats,
-};
+export const StatsControllers = { getOverviewStats, getEarningsStats };
