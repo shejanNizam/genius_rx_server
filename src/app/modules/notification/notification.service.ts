@@ -6,7 +6,9 @@ const createNotification = async (payload: Partial<INotification>) => {
   const notification = await Notification.create(payload);
 
   // Push notification in real-time to the recipient's personal room
-  emitToUser(payload.userId!.toString(), "new_notification", notification);
+  if (payload.userId) {
+    emitToUser(payload.userId.toString(), "new_notification", notification);
+  }
 
   return notification;
 };

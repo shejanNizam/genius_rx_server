@@ -30,7 +30,7 @@ const sendMessage = async (senderId: string, payload: Partial<IMessage>) => {
     "name avatar role",
   );
 
-  const conversationId = payload.conversationId!.toString();
+  const conversationId = conv._id.toString();
 
   // Push to the conversation room (users who have the chat open)
   emitToConversation(conversationId, "new_message", populated);
