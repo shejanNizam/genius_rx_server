@@ -15,8 +15,8 @@ const uploadFiles = catchAsync(async (req: Request, res: Response) => {
 
   const data =
     files.length === 1
-      ? { url: files[0].path, publicId: files[0].filename }
-      : files.map((file) => file.path);
+      ? { url: files[0].path }
+      : { url: files.map((file) => file.path) };
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

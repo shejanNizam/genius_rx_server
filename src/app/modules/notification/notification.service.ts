@@ -1,8 +1,14 @@
+import { emitToUser } from "../../../socket/socket";
 import { INotification } from "./notification.interface";
 import { Notification } from "./notification.model";
 
 const createNotification = async (payload: Partial<INotification>) => {
-  return Notification.create(payload);
+  const notification = await Notification.create(payload);
+
+  // Push notification in real-time to the recipient's personal room
+  emitToUser(payload.userId!.toString(), "new_notification", notification);
+
+  return notification;
 };
 
 const getMyNotifications = async (userId: string, query: Record<string, unknown>) => {

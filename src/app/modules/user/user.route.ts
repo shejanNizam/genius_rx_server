@@ -25,6 +25,12 @@ router.get(
   UserControllers.getMe,
 );
 
+router.delete(
+  "/me",
+  checkAuth(...Object.values(UserRole)),
+  UserControllers.deleteMe,
+);
+
 router.get(
   "/:id",
   checkAuth(UserRole.admin, UserRole.super_admin),

@@ -71,6 +71,17 @@ const deleteUser = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const deleteMe = catchAsync(async (req: Request, res: Response) => {
+  const { _id: userId } = req.user as JwtPayload;
+  await UserServices.deleteMe(userId as string);
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: "Account deleted successfully!",
+    data: null,
+  });
+});
+
 export const UserControllers = {
   createUser,
   updateUser,
@@ -78,4 +89,5 @@ export const UserControllers = {
   getSingleUser,
   getMe,
   deleteUser,
+  deleteMe,
 };

@@ -87,6 +87,12 @@ const getAllUsers = async (query: Record<string, unknown>) => {
   const filter: Record<string, unknown> = { isDeleted: false };
   if (query.role) filter.role = query.role;
   if (query.status) filter.status = query.status;
+  if (query.search) {
+    filter.$or = [
+      { name: { $regex: query.search, $options: "i" } },
+      { email: { $regex: query.search, $options: "i" } },
+    ];
+  }
 
   const [users, total] = await Promise.all([
     User.find(filter).skip(skip).limit(limit).sort({ createdAt: -1 }),
@@ -121,6 +127,17 @@ const deleteUser = async (userId: string) => {
   return user;
 };
 
+// Self-service account deletion — any authenticated user deletes their own account
+const deleteMe = async (userId: string) => {
+  const user = await User.findOneAndUpdate(
+    { _id: userId, isDeleted: false },
+    { isDeleted: true, deletedAt: new Date() },
+    { returnDocument: "after" },
+  );
+  if (!user) throw new AppError(httpStatus.NOT_FOUND, "User not found");
+  return user;
+};
+
 export const UserServices = {
   createUser,
   updateUser,
@@ -128,4 +145,5 @@ export const UserServices = {
   getSingleUser,
   getMe,
   deleteUser,
+  deleteMe,
 };

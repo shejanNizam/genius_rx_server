@@ -1,9 +1,10 @@
 ﻿/* eslint-disable no-console */
-import { Server } from "http";
+import http, { Server } from "http";
 import mongoose from "mongoose";
 import app from "./app";
 import { configs } from "./app/config/index";
 import { connectRedis, redisClient } from "./app/config/redis.config";
+import { initSocket } from "./socket/socket";
 import { seedAdmin } from "./app/utils/seedAdmin";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
 
@@ -19,7 +20,10 @@ async function main() {
     await seedAdmin();
 
     if (configs.node_env !== "production") {
-      server = app.listen(configs.port, () => {
+      const httpServer = http.createServer(app);
+      await initSocket(httpServer);
+
+      server = httpServer.listen(configs.port, () => {
         console.log(`Genius Rx Server is running on port ${configs.port}`);
       });
     }

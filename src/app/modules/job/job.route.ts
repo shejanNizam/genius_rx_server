@@ -10,6 +10,7 @@ const { recruiter, admin, super_admin } = UserRole;
 router.post("/", checkAuth(recruiter), JobControllers.createJob);
 router.get("/", JobControllers.getAllJobs);
 router.get("/my", checkAuth(recruiter), JobControllers.getMyJobs);
+router.get("/admin/all", checkAuth(admin, super_admin), JobControllers.adminGetAllJobs);
 router.get("/:id", JobControllers.getJobById);
 router.patch("/:id", checkAuth(recruiter), JobControllers.updateJob);
 router.delete(

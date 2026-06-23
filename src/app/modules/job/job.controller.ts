@@ -44,4 +44,9 @@ const adminDeleteJob = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Job deleted successfully", data: null });
 });
 
-export const JobControllers = { createJob, getAllJobs, getMyJobs, getJobById, updateJob, deleteJob, adminDeleteJob };
+const adminGetAllJobs = catchAsync(async (req: Request, res: Response) => {
+  const result = await JobServices.adminGetAllJobs(req.query);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "All jobs retrieved successfully", data: result.data, meta: result.meta });
+});
+
+export const JobControllers = { createJob, getAllJobs, getMyJobs, getJobById, updateJob, deleteJob, adminDeleteJob, adminGetAllJobs };

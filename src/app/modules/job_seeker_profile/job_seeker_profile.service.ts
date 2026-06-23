@@ -1,5 +1,6 @@
 import httpStatus from "http-status";
 import AppError from "../../errorHelpers/AppError";
+import { User } from "../user/user.model";
 import { IJobSeekerProfile } from "./job_seeker_profile.interface";
 import { JobSeekerProfile } from "./job_seeker_profile.model";
 
@@ -36,6 +37,15 @@ const getAllProfiles = async (query: Record<string, unknown>) => {
   const filter: Record<string, unknown> = {};
   if (query.lookingStatus) filter.lookingStatus = query.lookingStatus;
   if (query.skills) filter.skills = { $in: (query.skills as string).split(",") };
+
+  // Search by user name — find matching user IDs then filter profiles
+  if (query.search) {
+    const matchedUsers = await User.find({
+      name: { $regex: query.search as string, $options: "i" },
+      isDeleted: false,
+    }).select("_id");
+    filter.userId = { $in: matchedUsers.map((u) => u._id) };
+  }
 
   const [profiles, total] = await Promise.all([
     JobSeekerProfile.find(filter).skip(skip).limit(limit).populate("userId", "name email avatar"),

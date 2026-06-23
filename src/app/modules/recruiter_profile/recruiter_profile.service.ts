@@ -33,6 +33,7 @@ const getAllProfiles = async (query: Record<string, unknown>) => {
 
   const filter: Record<string, unknown> = {};
   if (query.location) filter.location = { $regex: query.location, $options: "i" };
+  if (query.search) filter.companyName = { $regex: query.search, $options: "i" };
 
   const [profiles, total] = await Promise.all([
     RecruiterProfile.find(filter).skip(skip).limit(limit).populate("userId", "name email avatar"),

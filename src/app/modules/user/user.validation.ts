@@ -15,7 +15,10 @@ export const createUserZodSchema = z.object({
     .regex(/^(?=.*[A-Z])/, { message: "Password must contain at least 1 uppercase letter." })
     .regex(/^(?=.*[!@#$%^&*])/, { message: "Password must contain at least 1 special character." })
     .regex(/^(?=.*\d)/, { message: "Password must contain at least 1 number." }),
-  phone: z.string({ error: "Phone must be string" }).optional(),
+  phone: z
+    .string({ error: "Phone must be string" })
+    .regex(/^\+[1-9]\d{6,14}$/, "Phone must be in E.164 format e.g. +8801712345678")
+    .optional(),
   role: z
     .enum([UserRole.job_seeker, UserRole.recruiter, UserRole.instructor])
     .optional(),
@@ -27,7 +30,10 @@ export const updateUserZodSchema = z.object({
     .min(2, { message: "Name must be at least 2 characters long." })
     .max(50, { message: "Name cannot exceed 50 characters." })
     .optional(),
-  phone: z.string({ error: "Phone must be string" }).optional(),
+  phone: z
+    .string({ error: "Phone must be string" })
+    .regex(/^\+[1-9]\d{6,14}$/, "Phone must be in E.164 format e.g. +8801712345678")
+    .optional(),
   role: z.enum(Object.values(UserRole) as [string, ...string[]]).optional(),
   status: z.enum(["active", "blocked"]).optional(),
   blockReason: z.string().optional(),

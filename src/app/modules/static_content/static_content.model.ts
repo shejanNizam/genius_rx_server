@@ -5,7 +5,7 @@ const staticContentSchema = new Schema<IStaticContent>(
   {
     type: {
       type: String,
-      enum: ["about_us", "privacy_policy", "terms"],
+      enum: ["about_us", "privacy_policy", "terms", "support"],
       required: true,
       unique: true,
     },
