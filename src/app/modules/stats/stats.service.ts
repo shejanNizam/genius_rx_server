@@ -2,6 +2,7 @@ import { UserRole } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { Job } from "../job/job.model";
 import { Transaction } from "../transaction/transaction.model";
+import { Application } from "../application/application.model";
 
 const getChangePercent = (current: number, previous: number): number => {
   if (previous === 0) return current > 0 ? 100 : 0;
@@ -234,7 +235,42 @@ const getEarningsStats = async () => {
   };
 };
 
+const getRecruiterDashboard = async (
+  recruiterId: string,
+  month: number,
+  year: number,
+) => {
+  const startDate = new Date(year, month - 1, 1);
+  const endDate = new Date(year, month, 1);
+
+  const jobIds = await Job.find({ recruiterId, isDeleted: false }).distinct("_id");
+
+  const [totalJobs, totalApplications, analyticsRaw] = await Promise.all([
+    Job.countDocuments({ recruiterId, isDeleted: false }),
+    Application.countDocuments({ jobId: { $in: jobIds } }),
+    Application.aggregate([
+      {
+        $match: {
+          jobId: { $in: jobIds },
+          createdAt: { $gte: startDate, $lt: endDate },
+        },
+      },
+      {
+        $group: {
+          _id: { $dayOfMonth: "$createdAt" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { _id: 1 } },
+      { $project: { _id: 0, date: "$_id", count: 1 } },
+    ]),
+  ]);
+
+  return { totalJobs, totalApplications, applicationAnalytics: analyticsRaw };
+};
+
 export const StatsServices = {
   getOverviewStats,
   getEarningsStats,
+  getRecruiterDashboard,
 };
