@@ -6,6 +6,11 @@ import sendResponse from "../../utils/sendResponse";
 
 type CloudinaryFile = Express.Multer.File & { path: string };
 
+const toFileResult = (file: CloudinaryFile) => ({
+  url: file.path,
+  publicId: file.filename,
+});
+
 const uploadFiles = catchAsync(async (req: Request, res: Response) => {
   const files = req.files as CloudinaryFile[] | undefined;
 
@@ -15,8 +20,8 @@ const uploadFiles = catchAsync(async (req: Request, res: Response) => {
 
   const data =
     files.length === 1
-      ? { url: files[0].path }
-      : { url: files.map((file) => file.path) };
+      ? toFileResult(files[0])
+      : files.map(toFileResult);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

@@ -302,7 +302,7 @@
               ]
             },
             "url": "{{baseUrl}}/upload",
-            "description": "Roles: any (must be logged in)\n\nField name must be 'files'.\n\nResponse:\n{\n  \"data\": { \"url\": \"https://res.cloudinary.com/...\" }\n}\n\nUse the url in:\n- Avatar: PATCH /user/:id  { avatar: { url } }\n- Resume: POST /resume  { file: { url } }\n- Message attachment: POST /message  { attachments: [{ url, type }] }"
+            "description": "Roles: any (must be logged in)\n\nField name must be 'files'.\n\nResponse:\n{\n  \"data\": { \"url\": \"https://res.cloudinary.com/...\", \"publicId\": \"genius_rx/uuid-filename\" }\n}\n\nUse the url and publicId in:\n- Avatar: PATCH /user/:id  { avatar: { url } }\n- Resume: POST /resume  { file: { url, publicId } }\n- Message attachment: POST /message  { attachments: [{ url, type }] }"
           }
         },
         {
@@ -328,7 +328,7 @@
               ]
             },
             "url": "{{baseUrl}}/upload",
-            "description": "Roles: any (must be logged in)\n\nMax 10 files per request, max 10 MB each.\nUse the same field name 'files' for all files.\n\nResponse:\n{\n  \"data\": { \"url\": [\"https://...\", \"https://...\"] }\n}"
+            "description": "Roles: any (must be logged in)\n\nMax 10 files per request, max 10 MB each.\nUse the same field name 'files' for all files.\n\nResponse:\n[\n  { \"url\": \"https://...\", \"publicId\": \"genius_rx/uuid-filename-1\" },\n  { \"url\": \"https://...\", \"publicId\": \"genius_rx/uuid-filename-2\" }\n]"
           }
         }
       ]
@@ -480,7 +480,7 @@
                   ]
                 },
                 "url": "{{baseUrl}}/upload",
-                "description": "Upload the PDF file first. Copy the returned 'url', then call 'Step 2'."
+                "description": "Upload the PDF file first. Copy the returned 'url' and 'publicId', then call 'Step 2'."
               }
             },
             {
@@ -495,7 +495,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"file\": {\n    \"url\": \"https://res.cloudinary.com/.../resume.pdf\"\n  },\n  \"label\": \"ICU Nurse CV 2024\",\n  \"source\": \"uploaded\"\n}",
+                  "raw": "{\n  \"file\": {\n    \"url\": \"https://res.cloudinary.com/diawolnsm/image/upload/v1782208429/genius_rx/772e1bd7-0b8f-4bc9-a2b6-ac01d4a77341-natural-scenery.webp\",\n    \"publicId\": \"genius_rx/9e1ae963-1002-4637-a2bb-afd9672a1c89-natural-scenery\"\n  },\n  \"label\": \"ICU Nurse CV 2024\",\n  \"source\": \"uploaded\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -503,7 +503,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/resume",
-                "description": "Roles: job_seeker\n\nPaste the URL from Step 1 upload into file.url.\nsource: uploaded | ai_generated"
+                "description": "Roles: job_seeker\n\nPaste the url and publicId from Step 1 upload into file.\nsource: uploaded | ai_generated"
               }
             },
             {

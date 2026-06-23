@@ -4,9 +4,9 @@ import mongoose from "mongoose";
 import app from "./app";
 import { configs } from "./app/config/index";
 import { connectRedis, redisClient } from "./app/config/redis.config";
-import { initSocket } from "./socket/socket";
 import { seedAdmin } from "./app/utils/seedAdmin";
 import { seedSuperAdmin } from "./app/utils/seedSuperAdmin";
+import { initSocket } from "./socket/socket";
 
 let server: Server;
 
