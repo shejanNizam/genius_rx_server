@@ -6,10 +6,26 @@
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
-    { "key": "baseUrl", "value": "http://localhost:5000/api/v1", "type": "string" },
-    { "key": "accessToken", "value": "", "type": "string" },
-    { "key": "refreshToken", "value": "", "type": "string" },
-    { "key": "userId", "value": "", "type": "string" }
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api/v1",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    }
   ],
   "item": [
     {
@@ -20,13 +36,22 @@
           "name": "Register",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\",\n  \"role\": \"job_seeker\",\n  \"phone\": \"+8801712345678\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/user/register" },
+            "url": "{{baseUrl}}/user/register",
             "description": "Roles: none (public)\n\nrole values: job_seeker | recruiter | instructor\n(Cannot self-register as admin)\n\nphone: optional, must be E.164 format e.g. +8801712345678\n\nNext step: POST /otp/send to send verification OTP."
           }
         },
@@ -34,13 +59,22 @@
           "name": "Send OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/otp/send" },
+            "url": "{{baseUrl}}/otp/send",
             "description": "Roles: none (public)\n\nSends a 6-digit OTP to the email address. OTP expires in 2 minutes.\nIf OTP expired, call this again to resend."
           }
         },
@@ -48,13 +82,22 @@
           "name": "Verify OTP",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"otp\": \"482910\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/otp/verify" },
+            "url": "{{baseUrl}}/otp/verify",
             "description": "Roles: none (public)\n\nVerifies the 6-digit OTP. Sets isEmailVerified = true.\nAfter this, user can log in."
           }
         },
@@ -79,13 +122,22 @@
           ],
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\",\n  \"password\": \"Password@123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/auth/login" },
+            "url": "{{baseUrl}}/auth/login",
             "description": "Roles: none (public)\n\nTokens are automatically saved to collection variables after login.\nCheck user.accessStatus: trial | subscribed | locked"
           }
         },
@@ -109,7 +161,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/auth/refresh-token" },
+            "url": "{{baseUrl}}/auth/refresh-token",
             "description": "Roles: none\n\nUse when accessToken expires (401 response).\nRefresh token is sent automatically via cookie."
           }
         },
@@ -118,7 +170,7 @@
           "request": {
             "method": "POST",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/auth/logout" },
+            "url": "{{baseUrl}}/auth/logout",
             "description": "Roles: none\n\nClears the refresh token cookie.\nAlso call DELETE /device-token before logout to stop push notifications."
           }
         },
@@ -127,15 +179,21 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"oldPassword\": \"OldPassword@123\",\n  \"newPassword\": \"NewPassword@456\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/auth/change-password" },
+            "url": "{{baseUrl}}/auth/change-password",
             "description": "Roles: any (must be logged in)\n\nChange password for the current user."
           }
         },
@@ -143,13 +201,22 @@
           "name": "Forgot Password",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"email\": \"john@example.com\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/auth/forgot-password" },
+            "url": "{{baseUrl}}/auth/forgot-password",
             "description": "Roles: none (public)\n\nSends a password reset link to the email.\nThe link contains a short-lived JWT reset token."
           }
         },
@@ -158,15 +225,25 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer <reset-token-from-email>" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Authorization",
+                "value": "Bearer <reset-token-from-email>"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"id\": \"64f1a2b3c4d5e6f7a8b9c0d1\",\n  \"newPassword\": \"NewPassword@123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/auth/reset-password" },
+            "url": "{{baseUrl}}/auth/reset-password",
             "description": "Roles: none\n\nExtract 'id' and 'token' from the reset link query params.\nSend the token from the email link in the Authorization header — NOT the regular accessToken."
           }
         },
@@ -175,15 +252,21 @@
           "request": {
             "method": "POST",
             "header": [
-              { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-              { "key": "Content-Type", "value": "application/json" }
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
             ],
             "body": {
               "mode": "raw",
               "raw": "{\n  \"password\": \"NewPassword@123\"\n}",
-              "options": { "raw": { "language": "json" } }
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
             },
-            "url": { "raw": "{{baseUrl}}/auth/set-password" },
+            "url": "{{baseUrl}}/auth/set-password",
             "description": "Roles: any\n\nFor users who signed up with Google OAuth and want to also enable email/password login."
           }
         },
@@ -192,7 +275,7 @@
           "request": {
             "method": "GET",
             "header": [],
-            "url": { "raw": "{{baseUrl}}/auth/google?redirect=yourapp://auth/callback" },
+            "url": "{{baseUrl}}/auth/google?redirect=yourapp://auth/callback",
             "description": "Roles: none (public)\n\nOpen this URL in a WebView or browser.\nReplace 'yourapp://auth/callback' with your Flutter deep link.\n\nAfter Google login, server redirects to:\n<deep-link>?accessToken=...&refreshToken=...\n\nParse tokens from query params and store them."
           }
         }
@@ -206,7 +289,7 @@
           "name": "Upload Single File",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
@@ -218,7 +301,7 @@
                 }
               ]
             },
-            "url": { "raw": "{{baseUrl}}/upload" },
+            "url": "{{baseUrl}}/upload",
             "description": "Roles: any (must be logged in)\n\nField name must be 'files'.\n\nResponse:\n{\n  \"data\": { \"url\": \"https://res.cloudinary.com/...\" }\n}\n\nUse the url in:\n- Avatar: PATCH /user/:id  { avatar: { url } }\n- Resume: POST /resume  { file: { url } }\n- Message attachment: POST /message  { attachments: [{ url, type }] }"
           }
         },
@@ -226,15 +309,25 @@
           "name": "Upload Multiple Files",
           "request": {
             "method": "POST",
-            "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+            "header": [],
             "body": {
               "mode": "formdata",
               "formdata": [
-                { "key": "files", "type": "file", "src": [], "description": "File 1 — Max 10 MB" },
-                { "key": "files", "type": "file", "src": [], "description": "File 2 — add more with same field name 'files'" }
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "File 1 — Max 10 MB"
+                },
+                {
+                  "key": "files",
+                  "type": "file",
+                  "src": [],
+                  "description": "File 2 — add more with same field name 'files'"
+                }
               ]
             },
-            "url": { "raw": "{{baseUrl}}/upload" },
+            "url": "{{baseUrl}}/upload",
             "description": "Roles: any (must be logged in)\n\nMax 10 files per request, max 10 MB each.\nUse the same field name 'files' for all files.\n\nResponse:\n{\n  \"data\": { \"url\": [\"https://...\", \"https://...\"] }\n}"
           }
         }
@@ -252,13 +345,22 @@
               "name": "Register (Job Seeker)",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Jane Nurse\",\n  \"email\": \"jane.nurse@example.com\",\n  \"password\": \"Password@123\",\n  \"role\": \"job_seeker\",\n  \"phone\": \"+8801812345678\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/register" },
+                "url": "{{baseUrl}}/user/register",
                 "description": "Step 1 of onboarding.\nNext: POST /otp/send"
               }
             },
@@ -266,8 +368,8 @@
               "name": "Start 7-Day Trial",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/trial" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription/trial",
                 "description": "Call once after first login.\nSets user.accessStatus = 'trial' for 7 days.\nThrows 409 if called again."
               }
             },
@@ -276,15 +378,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"token\": \"your-fcm-or-apns-device-token\",\n  \"platform\": \"android\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/device-token" },
+                "url": "{{baseUrl}}/device-token",
                 "description": "Call after every login and after OS grants notification permission.\nplatform: ios | android | web"
               }
             },
@@ -293,15 +401,21 @@
               "request": {
                 "method": "DELETE",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"token\": \"your-fcm-or-apns-device-token\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/device-token" },
+                "url": "{{baseUrl}}/device-token",
                 "description": "Call before logout to stop receiving push notifications on this device."
               }
             }
@@ -316,15 +430,21 @@
               "request": {
                 "method": "PUT",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"shortBio\": \"Experienced ICU nurse with 5 years in critical care\",\n  \"contactInfo\": {\n    \"phone\": \"+8801712345678\",\n    \"address\": \"Dhaka, Bangladesh\"\n  },\n  \"lookingStatus\": \"actively_looking\",\n  \"experience\": [\n    {\n      \"company\": \"Dhaka Medical College Hospital\",\n      \"title\": \"Registered Nurse\",\n      \"startDate\": \"2019-01-01\",\n      \"endDate\": \"2024-01-01\",\n      \"current\": false,\n      \"description\": \"ICU nursing, patient monitoring\"\n    }\n  ],\n  \"education\": [\n    {\n      \"institution\": \"BSMMU\",\n      \"degree\": \"BSc Nursing\",\n      \"year\": \"2018\"\n    }\n  ],\n  \"skills\": [\"Patient Care\", \"IV Therapy\", \"EMR Systems\", \"Critical Care\"],\n  \"certificates\": [\n    {\n      \"name\": \"BLS Certification\",\n      \"issuer\": \"AHA\",\n      \"year\": \"2023\"\n    }\n  ],\n  \"defaultResumeId\": null\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/job-seeker-profile" },
+                "url": "{{baseUrl}}/job-seeker-profile",
                 "description": "Roles: job_seeker\n\nUpsert — creates if not exists, updates if exists.\nlookingStatus: actively_looking | open_to_work | not_open\nAll fields are optional."
               }
             },
@@ -332,8 +452,8 @@
               "name": "Get My Job Seeker Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/job-seeker-profile/my" },
+                "header": [],
+                "url": "{{baseUrl}}/job-seeker-profile/my",
                 "description": "Roles: job_seeker\n\nReturns the logged-in user's profile with defaultResume populated."
               }
             }
@@ -347,14 +467,19 @@
               "name": "Step 1 — Upload Resume File",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "body": {
                   "mode": "formdata",
                   "formdata": [
-                    { "key": "files", "type": "file", "src": [], "description": "Select PDF resume file. Max 10 MB." }
+                    {
+                      "key": "files",
+                      "type": "file",
+                      "src": [],
+                      "description": "Select PDF resume file. Max 10 MB."
+                    }
                   ]
                 },
-                "url": { "raw": "{{baseUrl}}/upload" },
+                "url": "{{baseUrl}}/upload",
                 "description": "Upload the PDF file first. Copy the returned 'url', then call 'Step 2'."
               }
             },
@@ -363,15 +488,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"file\": {\n    \"url\": \"https://res.cloudinary.com/.../resume.pdf\"\n  },\n  \"label\": \"ICU Nurse CV 2024\",\n  \"source\": \"uploaded\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/resume" },
+                "url": "{{baseUrl}}/resume",
                 "description": "Roles: job_seeker\n\nPaste the URL from Step 1 upload into file.url.\nsource: uploaded | ai_generated"
               }
             },
@@ -379,8 +510,8 @@
               "name": "Get My Resumes",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/resume/my" },
+                "header": [],
+                "url": "{{baseUrl}}/resume/my",
                 "description": "Roles: job_seeker\n\nReturns all resumes for the logged-in user."
               }
             },
@@ -388,8 +519,8 @@
               "name": "Get Resume by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/resume/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/resume/:id",
                 "description": "Roles: any\n\nReplace :id with the resume _id."
               }
             },
@@ -397,8 +528,8 @@
               "name": "Set Default Resume",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/resume/:id/set-default" },
+                "header": [],
+                "url": "{{baseUrl}}/resume/:id/set-default",
                 "description": "Roles: job_seeker\n\nSets this resume as the default. Clears isDefault on all other resumes."
               }
             },
@@ -406,8 +537,8 @@
               "name": "Delete Resume",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/resume/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/resume/:id",
                 "description": "Roles: job_seeker"
               }
             }
@@ -425,12 +556,44 @@
                 "url": {
                   "raw": "{{baseUrl}}/job?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "jobType", "value": "full_time", "disabled": true, "description": "full_time | part_time | contract" },
-                    { "key": "jobLevel", "value": "mid", "disabled": true, "description": "entry | mid | senior" },
-                    { "key": "locationType", "value": "on_site", "disabled": true, "description": "on_site | remote | hybrid" },
-                    { "key": "search", "value": "ICU nurse", "disabled": true, "description": "Full-text search on title and skills" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "jobType",
+                      "value": "full_time",
+                      "disabled": true,
+                      "description": "full_time | part_time | contract"
+                    },
+                    {
+                      "key": "jobLevel",
+                      "value": "mid",
+                      "disabled": true,
+                      "description": "entry | mid | senior"
+                    },
+                    {
+                      "key": "locationType",
+                      "value": "on_site",
+                      "disabled": true,
+                      "description": "on_site | remote | hybrid"
+                    },
+                    {
+                      "key": "search",
+                      "value": "ICU nurse",
+                      "disabled": true,
+                      "description": "Full-text search on title and skills"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job"
                   ]
                 },
                 "description": "Roles: none (public — no auth needed)\n\nOptional filters: jobType, jobLevel, locationType, search\nToggle disabled params above to use them."
@@ -441,7 +604,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/job/:id" },
+                "url": "{{baseUrl}}/job/:id",
                 "description": "Roles: none (public)\n\nReturns full job details PLUS recruiterProfile for the 'About Company' section.\n\nResponse includes:\n- recruiterId: { name, email, avatar, role }\n- recruiterProfile: { companyName, location, aboutCompany, socialLinks, ... }\n\nrecruitedProfile is null if recruiter hasn't set up company profile yet."
               }
             }
@@ -456,15 +619,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"jobId\": \"64f5a2b3c4d5e6f7a8b9c0d1\",\n  \"resumeId\": \"64f3a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/application" },
+                "url": "{{baseUrl}}/application",
                 "description": "Roles: job_seeker\n\nApply to an active job with a specific resume.\nAlso increments job.applicantsCount by 1.\n\nErrors:\n- 'Job not found or not active'\n- 'Already applied to this job'"
               }
             },
@@ -472,13 +641,31 @@
               "name": "Get My Applications",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/application/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "status", "value": "applied", "disabled": true, "description": "applied | viewed | shortlisted | selected | rejected" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "applied",
+                      "disabled": true,
+                      "description": "applied | viewed | shortlisted | selected | rejected"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "application",
+                    "my"
                   ]
                 },
                 "description": "Roles: job_seeker\n\nTrack all your job applications and their statuses."
@@ -494,15 +681,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"jobId\": \"64f5a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/saved-job" },
+                "url": "{{baseUrl}}/saved-job",
                 "description": "Roles: job_seeker"
               }
             },
@@ -510,12 +703,25 @@
               "name": "Get My Saved Jobs",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/saved-job/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "saved-job",
+                    "my"
                   ]
                 },
                 "description": "Roles: job_seeker"
@@ -525,8 +731,8 @@
               "name": "Unsave a Job",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/saved-job/:jobId" },
+                "header": [],
+                "url": "{{baseUrl}}/saved-job/:jobId",
                 "description": "Roles: job_seeker\n\nReplace :jobId with the job's _id (not saved-job _id)."
               }
             }
@@ -541,15 +747,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"resumeId\": \"64f3a2b3c4d5e6f7a8b9c0d1\",\n  \"score\": 78,\n  \"issues\": [\n    { \"section\": \"Skills\", \"message\": \"Missing keywords: EMR, EHR\" },\n    { \"section\": \"Summary\", \"message\": \"Too short, add more detail\" }\n  ]\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/ats-check" },
+                "url": "{{baseUrl}}/ats-check",
                 "description": "Roles: job_seeker"
               }
             },
@@ -557,8 +769,8 @@
               "name": "Get My ATS Checks",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/ats-check/my" },
+                "header": [],
+                "url": "{{baseUrl}}/ats-check/my",
                 "description": "Roles: job_seeker"
               }
             },
@@ -566,8 +778,8 @@
               "name": "Get ATS Check by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/ats-check/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/ats-check/:id",
                 "description": "Roles: job_seeker"
               }
             }
@@ -581,8 +793,8 @@
               "name": "Get My Conversations (Inbox)",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/conversation" },
+                "header": [],
+                "url": "{{baseUrl}}/conversation",
                 "description": "Roles: job_seeker\n\nAll conversations sorted by lastMessageAt (newest first)."
               }
             },
@@ -591,15 +803,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"recipientId\": \"64f2a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/conversation" },
+                "url": "{{baseUrl}}/conversation",
                 "description": "Roles: job_seeker (can initiate with instructor only)\n\nJob seekers CANNOT initiate with recruiters.\nIf conversation already exists, returns existing one."
               }
             },
@@ -607,8 +825,8 @@
               "name": "Get Conversation by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/conversation/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/conversation/:id",
                 "description": "Roles: job_seeker (must be a participant)"
               }
             },
@@ -617,15 +835,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"conversationId\": \"64f6a2b3c4d5e6f7a8b9c0d1\",\n  \"text\": \"Hello! I saw your profile and wanted to connect.\",\n  \"attachments\": []\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/message" },
+                "url": "{{baseUrl}}/message",
                 "description": "Roles: job_seeker (must be a participant)\n\ntext and attachments are both optional but at least one must be provided.\nReal-time: emits 'new_message' event via Socket.io."
               }
             },
@@ -633,12 +857,25 @@
               "name": "Get Messages in Conversation",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/message/:conversationId?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "message",
+                    ":conversationId"
                   ]
                 },
                 "description": "Roles: job_seeker (must be a participant)\n\nMessages sorted oldest → newest."
@@ -648,8 +885,8 @@
               "name": "Mark Messages as Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/message/:conversationId/read" },
+                "header": [],
+                "url": "{{baseUrl}}/message/:conversationId/read",
                 "description": "Roles: job_seeker (must be a participant)\n\nEmits 'message_read' Socket.io event."
               }
             }
@@ -662,13 +899,30 @@
               "name": "Get My Notifications",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/notification?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" },
-                    { "key": "isRead", "value": "false", "disabled": true, "description": "Filter: true | false" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    },
+                    {
+                      "key": "isRead",
+                      "value": "false",
+                      "disabled": true,
+                      "description": "Filter: true | false"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notification"
                   ]
                 },
                 "description": "Roles: any\n\nmeta.unreadCount = badge number.\nFilter by isRead=false to show only unread."
@@ -678,8 +932,8 @@
               "name": "Mark All Notifications as Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/notification/mark-all-read" },
+                "header": [],
+                "url": "{{baseUrl}}/notification/mark-all-read",
                 "description": "Roles: any"
               }
             },
@@ -687,8 +941,8 @@
               "name": "Mark One Notification as Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/notification/:id/read" },
+                "header": [],
+                "url": "{{baseUrl}}/notification/:id/read",
                 "description": "Roles: any"
               }
             },
@@ -696,8 +950,8 @@
               "name": "Delete Notification",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/notification/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/notification/:id",
                 "description": "Roles: any"
               }
             }
@@ -711,15 +965,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"blockedId\": \"64f2a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/block" },
+                "url": "{{baseUrl}}/block",
                 "description": "Roles: any\n\nBlocked users cannot start new conversations with the blocker."
               }
             },
@@ -727,8 +987,8 @@
               "name": "Get My Block List",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/block/my" },
+                "header": [],
+                "url": "{{baseUrl}}/block/my",
                 "description": "Roles: any"
               }
             },
@@ -736,8 +996,8 @@
               "name": "Unblock a User",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/block/:userId" },
+                "header": [],
+                "url": "{{baseUrl}}/block/:userId",
                 "description": "Roles: any\n\nReplace :userId with the user's _id."
               }
             },
@@ -746,15 +1006,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"reportedUserId\": \"64f2a2b3c4d5e6f7a8b9c0d1\",\n  \"category\": \"harassment\",\n  \"description\": \"This user is sending inappropriate messages.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/report" },
+                "url": "{{baseUrl}}/report",
                 "description": "Roles: any\n\ncategory: hate_speech | threat | harassment | impersonation | fraud_scam | fake_identity | something_else | other"
               }
             }
@@ -768,7 +1034,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/subscription-plan?audience=job_seeker" },
+                "url": "{{baseUrl}}/subscription-plan?audience=job_seeker",
                 "description": "Roles: none (public)\n\nActive subscription plans for job seekers.\nPrice is returned as string — parse with double.parse() in Flutter."
               }
             },
@@ -776,8 +1042,8 @@
               "name": "Get My Subscription",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/my" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription/my",
                 "description": "Roles: any\n\nActive trialing or subscribed plan with plan details."
               }
             },
@@ -785,8 +1051,8 @@
               "name": "Get Subscription History",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/history" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription/history",
                 "description": "Roles: any"
               }
             },
@@ -795,15 +1061,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"subscriptionId\": \"64fca2b3c4d5e6f7a8b9c0d1\",\n  \"amount\": \"29.99\",\n  \"currency\": \"USD\",\n  \"gateway\": \"stripe\",\n  \"gatewayRef\": \"pi_3OxKLz2eZvKYlo2C1DnpMXfz\",\n  \"type\": \"subscription\",\n  \"status\": \"success\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/transaction" },
+                "url": "{{baseUrl}}/transaction",
                 "description": "Roles: any\n\nRecord payment before or alongside POST /subscription.\ntype: subscription | renewal\nstatus: pending | success | failed"
               }
             },
@@ -812,15 +1084,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"29.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/subscription" },
+                "url": "{{baseUrl}}/subscription",
                 "description": "Roles: any\n\nCall after a successful payment (POST /transaction).\nSets user.accessStatus = 'subscribed'."
               }
             },
@@ -828,12 +1106,25 @@
               "name": "Get My Transactions",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/transaction/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "transaction",
+                    "my"
                   ]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
@@ -843,8 +1134,8 @@
               "name": "Cancel Subscription",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/cancel" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription/cancel",
                 "description": "Roles: any\n\nSets subscription status = 'cancelled' and user.accessStatus = 'locked'."
               }
             }
@@ -857,8 +1148,8 @@
               "name": "Get My Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" },
+                "header": [],
+                "url": "{{baseUrl}}/user/me",
                 "description": "Roles: any\n\nFull user object with accessStatus, subscription info, etc."
               }
             },
@@ -867,15 +1158,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Jane Updated\",\n  \"phone\": \"+8801912345678\",\n  \"avatar\": {\n    \"url\": \"https://res.cloudinary.com/.../avatar.jpg\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/{{userId}}" },
+                "url": "{{baseUrl}}/user/{{userId}}",
                 "description": "Roles: any (replace {{userId}} with your own _id)\n\nUpload avatar first via POST /upload, then paste the URL here.\nAll fields optional."
               }
             },
@@ -883,8 +1180,8 @@
               "name": "Delete My Account",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" },
+                "header": [],
+                "url": "{{baseUrl}}/user/me",
                 "description": "Roles: any\n\nSelf-service soft-delete. Sets isDeleted = true.\nAccount can be restored by admin."
               }
             },
@@ -893,7 +1190,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content/about_us" },
+                "url": "{{baseUrl}}/content/about_us",
                 "description": "Roles: none (public)\n\ntype values: about_us | privacy_policy | terms | support\nChange the last path segment to get different pages."
               }
             }
@@ -912,13 +1209,22 @@
               "name": "Register (Recruiter)",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"MedStaff HR\",\n  \"email\": \"hr@medstaff.com\",\n  \"password\": \"Password@123\",\n  \"role\": \"recruiter\",\n  \"phone\": \"+12025551234\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/register" },
+                "url": "{{baseUrl}}/user/register",
                 "description": "Step 1 of recruiter onboarding.\nNext: POST /otp/send → POST /otp/verify → POST /auth/login"
               }
             },
@@ -926,8 +1232,8 @@
               "name": "Start 7-Day Trial",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/trial" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription/trial",
                 "description": "Call once after first login."
               }
             },
@@ -936,15 +1242,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"token\": \"your-fcm-or-apns-device-token\",\n  \"platform\": \"android\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/device-token" }
+                "url": "{{baseUrl}}/device-token"
               }
             }
           ]
@@ -956,14 +1268,19 @@
               "name": "Upload Company Logo",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "body": {
                   "mode": "formdata",
                   "formdata": [
-                    { "key": "files", "type": "file", "src": [], "description": "Company logo image" }
+                    {
+                      "key": "files",
+                      "type": "file",
+                      "src": [],
+                      "description": "Company logo image"
+                    }
                   ]
                 },
-                "url": { "raw": "{{baseUrl}}/upload" },
+                "url": "{{baseUrl}}/upload",
                 "description": "Upload logo first, copy the URL, then update user profile avatar."
               }
             },
@@ -972,15 +1289,21 @@
               "request": {
                 "method": "PUT",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"companyName\": \"MedStaff Solutions\",\n  \"location\": \"Boston, MA, USA\",\n  \"employeeCount\": 500,\n  \"serviceType\": \"Healthcare Staffing\",\n  \"socialLinks\": {\n    \"website\": \"https://medstaff.com\",\n    \"linkedin\": \"https://linkedin.com/company/medstaff\",\n    \"facebook\": \"\",\n    \"instagram\": \"\",\n    \"twitter\": \"\"\n  },\n  \"aboutCompany\": \"We connect healthcare professionals with leading hospitals across the US.\",\n  \"companyCulture\": \"Collaborative, patient-first culture with room to grow.\",\n  \"businessLicenses\": [\n    {\n      \"name\": \"State Staffing License\",\n      \"number\": \"SL-2024-001\",\n      \"expiryDate\": \"2025-12-31\",\n      \"documentUrl\": \"https://res.cloudinary.com/.../license.pdf\"\n    }\n  ]\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/recruiter-profile" },
+                "url": "{{baseUrl}}/recruiter-profile",
                 "description": "Roles: recruiter\n\nUpsert — creates or updates. All fields optional."
               }
             },
@@ -988,8 +1311,8 @@
               "name": "Get My Company Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/recruiter-profile/my" },
+                "header": [],
+                "url": "{{baseUrl}}/recruiter-profile/my",
                 "description": "Roles: recruiter"
               }
             }
@@ -1003,15 +1326,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"title\": \"Registered Nurse - ICU\",\n  \"description\": \"We are looking for an experienced ICU nurse to join our team.\",\n  \"responsibilities\": \"- Monitor patient vitals\\n- Administer medications\\n- Coordinate with physicians\",\n  \"requirements\": \"- 2+ years ICU experience\\n- Active RN license\\n- BLS certified\",\n  \"benefits\": \"- Health insurance\\n- 401k\\n- Sign-on bonus $5,000\",\n  \"locationType\": \"on_site\",\n  \"jobType\": \"full_time\",\n  \"jobLevel\": \"mid\",\n  \"salary\": {\n    \"amount\": 85000,\n    \"currency\": \"USD\",\n    \"period\": \"year\"\n  },\n  \"neededExperience\": \"2-5 years\",\n  \"skills\": [\"Patient Care\", \"IV Therapy\", \"Critical Care\", \"EMR\"],\n  \"status\": \"active\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/job" },
+                "url": "{{baseUrl}}/job",
                 "description": "Roles: recruiter\n\nlocationType: on_site | remote | hybrid\njobType: full_time | part_time | contract\njobLevel: entry | mid | senior\nstatus: active | inactive | closed"
               }
             },
@@ -1019,13 +1348,31 @@
               "name": "Get My Posted Jobs",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/job/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "status", "value": "active", "disabled": true, "description": "active | inactive | closed" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "disabled": true,
+                      "description": "active | inactive | closed"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job",
+                    "my"
                   ]
                 },
                 "description": "Roles: recruiter"
@@ -1036,15 +1383,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"title\": \"Senior ICU Nurse\",\n  \"status\": \"active\",\n  \"salary\": {\n    \"amount\": 95000,\n    \"currency\": \"USD\",\n    \"period\": \"year\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/job/:id" },
+                "url": "{{baseUrl}}/job/:id",
                 "description": "Roles: recruiter (must own the job)\n\nAll fields optional."
               }
             },
@@ -1052,8 +1405,8 @@
               "name": "Delete Job (Soft Delete)",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/job/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/job/:id",
                 "description": "Roles: recruiter (must own the job)\n\nSets isDeleted = true."
               }
             }
@@ -1066,13 +1419,32 @@
               "name": "Get Applicants for a Job",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/application/job/:jobId?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "status", "value": "applied", "disabled": true, "description": "applied | viewed | shortlisted | selected | rejected" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "applied",
+                      "disabled": true,
+                      "description": "applied | viewed | shortlisted | selected | rejected"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "application",
+                    "job",
+                    ":jobId"
                   ]
                 },
                 "description": "Roles: recruiter (must own the job)\n\nReplace :jobId with the job's _id.\nFilter by status to show pipeline stages."
@@ -1083,15 +1455,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"shortlisted\",\n  \"interview\": {\n    \"date\": \"2024-02-15T10:00:00.000Z\",\n    \"location\": \"123 Main St, Boston MA\",\n    \"note\": \"Please bring your nursing license and BLS card\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/application/:id/status" },
+                "url": "{{baseUrl}}/application/:id/status",
                 "description": "Roles: recruiter (must own the job)\n\nstatus: applied | viewed | shortlisted | selected | rejected\ninterview object is optional — only for status = 'shortlisted'."
               }
             }
@@ -1104,15 +1482,42 @@
               "name": "Browse All Job Seekers",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/job-seeker-profile?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "lookingStatus", "value": "actively_looking", "disabled": true, "description": "actively_looking | open_to_work | not_open" },
-                    { "key": "skills", "value": "Patient Care,IV Therapy", "disabled": true, "description": "Comma-separated skills" },
-                    { "key": "search", "value": "Jane", "disabled": true, "description": "Search by user name" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "lookingStatus",
+                      "value": "actively_looking",
+                      "disabled": true,
+                      "description": "actively_looking | open_to_work | not_open"
+                    },
+                    {
+                      "key": "skills",
+                      "value": "Patient Care,IV Therapy",
+                      "disabled": true,
+                      "description": "Comma-separated skills"
+                    },
+                    {
+                      "key": "search",
+                      "value": "Jane",
+                      "disabled": true,
+                      "description": "Search by user name"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-seeker-profile"
                   ]
                 },
                 "description": "Roles: recruiter\n\nSearch by name with ?search=\nFilter by lookingStatus and skills."
@@ -1122,8 +1527,8 @@
               "name": "Get Job Seeker Profile by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/job-seeker-profile/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/job-seeker-profile/:id",
                 "description": "Roles: recruiter\n\nFull profile of a specific job seeker."
               }
             },
@@ -1132,15 +1537,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"recipientId\": \"64f2a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/conversation" },
+                "url": "{{baseUrl}}/conversation",
                 "description": "Roles: recruiter (can initiate with job_seeker)\n\nOnly recruiters can start conversations with job seekers.\nIf conversation already exists, returns the existing one."
               }
             }
@@ -1153,8 +1564,8 @@
               "name": "Get My Conversations (Inbox)",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/conversation" }
+                "header": [],
+                "url": "{{baseUrl}}/conversation"
               }
             },
             {
@@ -1162,27 +1573,46 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"conversationId\": \"64f6a2b3c4d5e6f7a8b9c0d1\",\n  \"text\": \"Hi Jane, I'd like to discuss the ICU Nurse position with you.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/message" }
+                "url": "{{baseUrl}}/message"
               }
             },
             {
               "name": "Get Messages in Conversation",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/message/:conversationId?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "message",
+                    ":conversationId"
                   ]
                 }
               }
@@ -1191,8 +1621,8 @@
               "name": "Mark Messages as Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/message/:conversationId/read" }
+                "header": [],
+                "url": "{{baseUrl}}/message/:conversationId/read"
               }
             }
           ]
@@ -1204,12 +1634,24 @@
               "name": "Get My Notifications",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/notification?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notification"
                   ]
                 },
                 "description": "meta.unreadCount = badge count."
@@ -1219,8 +1661,8 @@
               "name": "Mark All Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/notification/mark-all-read" }
+                "header": [],
+                "url": "{{baseUrl}}/notification/mark-all-read"
               }
             }
           ]
@@ -1233,15 +1675,15 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/subscription-plan?audience=recruiter" }
+                "url": "{{baseUrl}}/subscription-plan?audience=recruiter"
               }
             },
             {
               "name": "Get My Subscription",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/my" }
+                "header": [],
+                "url": "{{baseUrl}}/subscription/my"
               }
             },
             {
@@ -1249,23 +1691,29 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"49.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/subscription" }
+                "url": "{{baseUrl}}/subscription"
               }
             },
             {
               "name": "Cancel Subscription",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/cancel" }
+                "header": [],
+                "url": "{{baseUrl}}/subscription/cancel"
               }
             }
           ]
@@ -1277,8 +1725,8 @@
               "name": "Get My Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" }
+                "header": [],
+                "url": "{{baseUrl}}/user/me"
               }
             },
             {
@@ -1286,23 +1734,29 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"MedStaff HR Updated\",\n  \"phone\": \"+12025559876\",\n  \"avatar\": {\n    \"url\": \"https://res.cloudinary.com/.../logo.jpg\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/{{userId}}" }
+                "url": "{{baseUrl}}/user/{{userId}}"
               }
             },
             {
               "name": "Delete My Account",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" },
+                "header": [],
+                "url": "{{baseUrl}}/user/me",
                 "description": "Roles: recruiter\n\nSelf-service soft-delete."
               }
             }
@@ -1321,21 +1775,30 @@
               "name": "Register (Instructor)",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Content-Type", "value": "application/json" }],
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Dr. Ahmed Khan\",\n  \"email\": \"dr.ahmed@example.com\",\n  \"password\": \"Password@123\",\n  \"role\": \"instructor\",\n  \"phone\": \"+8801611223344\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/register" }
+                "url": "{{baseUrl}}/user/register"
               }
             },
             {
               "name": "Start 7-Day Trial",
               "request": {
                 "method": "POST",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/trial" }
+                "header": [],
+                "url": "{{baseUrl}}/subscription/trial"
               }
             },
             {
@@ -1343,15 +1806,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"token\": \"your-fcm-or-apns-device-token\",\n  \"platform\": \"android\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/device-token" }
+                "url": "{{baseUrl}}/device-token"
               }
             }
           ]
@@ -1364,15 +1833,21 @@
               "request": {
                 "method": "PUT",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"shortBio\": \"15 years of clinical training experience in critical care\",\n  \"contactInfo\": {\n    \"email\": \"dr.ahmed@example.com\"\n  },\n  \"experience\": [\n    {\n      \"institution\": \"Johns Hopkins\",\n      \"role\": \"Clinical Trainer\",\n      \"years\": \"2010-2024\"\n    }\n  ],\n  \"education\": [\n    {\n      \"degree\": \"MD\",\n      \"institution\": \"Harvard Medical School\",\n      \"year\": \"2008\"\n    }\n  ],\n  \"skills\": [\"Clinical Training\", \"Simulation\", \"ACLS\", \"PALS\"],\n  \"licenses\": [\n    {\n      \"name\": \"Teaching License\",\n      \"issuer\": \"State Medical Board\",\n      \"number\": \"TL-2024\"\n    }\n  ],\n  \"certificates\": [\n    { \"name\": \"ACLS Instructor\", \"year\": \"2022\" }\n  ]\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/instructor-profile" },
+                "url": "{{baseUrl}}/instructor-profile",
                 "description": "Roles: instructor\n\nUpsert. All fields optional."
               }
             },
@@ -1380,8 +1855,8 @@
               "name": "Get My Instructor Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/instructor-profile/my" },
+                "header": [],
+                "url": "{{baseUrl}}/instructor-profile/my",
                 "description": "Roles: instructor"
               }
             }
@@ -1394,15 +1869,40 @@
               "name": "Browse All Job Seekers",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/job-seeker-profile?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "lookingStatus", "value": "actively_looking", "disabled": true },
-                    { "key": "skills", "value": "Patient Care", "disabled": true },
-                    { "key": "search", "value": "Jane", "disabled": true, "description": "Search by user name" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "lookingStatus",
+                      "value": "actively_looking",
+                      "disabled": true
+                    },
+                    {
+                      "key": "skills",
+                      "value": "Patient Care",
+                      "disabled": true
+                    },
+                    {
+                      "key": "search",
+                      "value": "Jane",
+                      "disabled": true,
+                      "description": "Search by user name"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job-seeker-profile"
                   ]
                 },
                 "description": "Roles: instructor\n\nBrowse and search job seekers."
@@ -1412,8 +1912,8 @@
               "name": "Get Job Seeker Profile by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/job-seeker-profile/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/job-seeker-profile/:id",
                 "description": "Roles: instructor"
               }
             },
@@ -1422,15 +1922,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"recipientId\": \"64f2a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/conversation" },
+                "url": "{{baseUrl}}/conversation",
                 "description": "Roles: instructor (can initiate with job_seeker)\n\nInstructor ↔ Job Seeker messaging is bidirectional."
               }
             }
@@ -1443,8 +1949,8 @@
               "name": "Get My Conversations (Inbox)",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/conversation" }
+                "header": [],
+                "url": "{{baseUrl}}/conversation"
               }
             },
             {
@@ -1452,27 +1958,46 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"conversationId\": \"64f6a2b3c4d5e6f7a8b9c0d1\",\n  \"text\": \"Hello! I noticed your profile and think you'd benefit from our ACLS course.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/message" }
+                "url": "{{baseUrl}}/message"
               }
             },
             {
               "name": "Get Messages in Conversation",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/message/:conversationId?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "message",
+                    ":conversationId"
                   ]
                 }
               }
@@ -1481,8 +2006,8 @@
               "name": "Mark Messages as Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/message/:conversationId/read" }
+                "header": [],
+                "url": "{{baseUrl}}/message/:conversationId/read"
               }
             }
           ]
@@ -1494,12 +2019,24 @@
               "name": "Get My Notifications",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/notification?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "notification"
                   ]
                 }
               }
@@ -1508,8 +2045,8 @@
               "name": "Mark All Read",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/notification/mark-all-read" }
+                "header": [],
+                "url": "{{baseUrl}}/notification/mark-all-read"
               }
             }
           ]
@@ -1522,23 +2059,29 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"blockedId\": \"64f2a2b3c4d5e6f7a8b9c0d1\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/block" }
+                "url": "{{baseUrl}}/block"
               }
             },
             {
               "name": "Unblock a User",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/block/:userId" }
+                "header": [],
+                "url": "{{baseUrl}}/block/:userId"
               }
             },
             {
@@ -1546,15 +2089,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"reportedUserId\": \"64f2a2b3c4d5e6f7a8b9c0d1\",\n  \"category\": \"harassment\",\n  \"description\": \"Reason for reporting this user.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/report" }
+                "url": "{{baseUrl}}/report"
               }
             }
           ]
@@ -1567,15 +2116,15 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/subscription-plan?audience=instructor" }
+                "url": "{{baseUrl}}/subscription-plan?audience=instructor"
               }
             },
             {
               "name": "Get My Subscription",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/my" }
+                "header": [],
+                "url": "{{baseUrl}}/subscription/my"
               }
             },
             {
@@ -1583,23 +2132,29 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"39.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/subscription" }
+                "url": "{{baseUrl}}/subscription"
               }
             },
             {
               "name": "Cancel Subscription",
               "request": {
                 "method": "PATCH",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription/cancel" }
+                "header": [],
+                "url": "{{baseUrl}}/subscription/cancel"
               }
             }
           ]
@@ -1611,8 +2166,8 @@
               "name": "Get My Profile",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" }
+                "header": [],
+                "url": "{{baseUrl}}/user/me"
               }
             },
             {
@@ -1620,23 +2175,29 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Dr. Ahmed Khan Updated\",\n  \"phone\": \"+8801611999888\",\n  \"avatar\": {\n    \"url\": \"https://res.cloudinary.com/.../avatar.jpg\"\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/{{userId}}" }
+                "url": "{{baseUrl}}/user/{{userId}}"
               }
             },
             {
               "name": "Delete My Account",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/me" }
+                "header": [],
+                "url": "{{baseUrl}}/user/me"
               }
             }
           ]
@@ -1654,8 +2215,8 @@
               "name": "Overview Stats",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/stats/overview" },
+                "header": [],
+                "url": "{{baseUrl}}/stats/overview",
                 "description": "Roles: admin, super_admin\n\nReturns:\n- totalUsers, totalJobSeekers, totalRecruiters, totalInstructors (with changePercent vs last month)\n- totalEarnings (with changePercent)\n- totalJobs (with changePercent)\n- recentUsers (last 10 registrations)"
               }
             },
@@ -1663,8 +2224,8 @@
               "name": "Earnings Stats",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/stats/earnings" },
+                "header": [],
+                "url": "{{baseUrl}}/stats/earnings",
                 "description": "Roles: admin, super_admin\n\nReturns:\n- totalEarnings (all-time successful transactions)\n- thisMonthEarnings (current calendar month)\n- pendingAmount (all pending transactions)"
               }
             }
@@ -1677,15 +2238,43 @@
               "name": "List All Users",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/user/all-users?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "role", "value": "job_seeker", "disabled": true, "description": "job_seeker | recruiter | instructor | admin | super_admin" },
-                    { "key": "status", "value": "active", "disabled": true, "description": "active | blocked" },
-                    { "key": "search", "value": "john", "disabled": true, "description": "Search by name or email" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "role",
+                      "value": "job_seeker",
+                      "disabled": true,
+                      "description": "job_seeker | recruiter | instructor | admin | super_admin"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "disabled": true,
+                      "description": "active | blocked"
+                    },
+                    {
+                      "key": "search",
+                      "value": "john",
+                      "disabled": true,
+                      "description": "Search by name or email"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "user",
+                    "all-users"
                   ]
                 },
                 "description": "Roles: admin, super_admin\n\nFilter by role, status, or search by name/email."
@@ -1695,8 +2284,8 @@
               "name": "Get User by ID",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/user/:id",
                 "description": "Roles: admin, super_admin"
               }
             },
@@ -1705,15 +2294,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"blocked\",\n  \"blockReason\": \"Repeated policy violations — harassment reports confirmed.\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/:id" },
+                "url": "{{baseUrl}}/user/:id",
                 "description": "Roles: admin, super_admin"
               }
             },
@@ -1722,15 +2317,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"active\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/:id" },
+                "url": "{{baseUrl}}/user/:id",
                 "description": "Roles: admin, super_admin"
               }
             },
@@ -1739,15 +2340,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"active\",\n  \"accessStatus\": \"subscribed\",\n  \"isEmailVerified\": true,\n  \"role\": \"recruiter\",\n  \"isDeleted\": false\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/user/:id" },
+                "url": "{{baseUrl}}/user/:id",
                 "description": "Roles: admin, super_admin\n\nAdmin-exclusive fields:\n- status: active | blocked\n- accessStatus: trial | subscribed | locked\n- isEmailVerified: true | false\n- role: any UserRole\n- isDeleted: false (restore a deleted user)"
               }
             },
@@ -1755,8 +2362,8 @@
               "name": "Soft Delete User",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/user/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/user/:id",
                 "description": "Roles: admin, super_admin\n\nSets isDeleted = true. Restoreable via PATCH with { isDeleted: false }."
               }
             }
@@ -1769,15 +2376,43 @@
               "name": "Get All Jobs (Admin View)",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/job/admin/all?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "status", "value": "active", "disabled": true, "description": "active | inactive | closed" },
-                    { "key": "isDeleted", "value": "true", "disabled": true, "description": "Show deleted jobs" },
-                    { "key": "search", "value": "nurse", "disabled": true }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "active",
+                      "disabled": true,
+                      "description": "active | inactive | closed"
+                    },
+                    {
+                      "key": "isDeleted",
+                      "value": "true",
+                      "disabled": true,
+                      "description": "Show deleted jobs"
+                    },
+                    {
+                      "key": "search",
+                      "value": "nurse",
+                      "disabled": true
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "job",
+                    "admin",
+                    "all"
                   ]
                 },
                 "description": "Roles: admin, super_admin\n\nSees ALL jobs regardless of status or soft-delete state.\nPublic endpoint only shows active, non-deleted jobs."
@@ -1787,8 +2422,8 @@
               "name": "Force Delete Job",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/job/admin/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/job/admin/:id",
                 "description": "Roles: admin, super_admin\n\nSoft-deletes any job regardless of ownership.\nUse when a listing violates platform policies."
               }
             }
@@ -1801,13 +2436,30 @@
               "name": "Get All Reports",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/report?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" },
-                    { "key": "status", "value": "pending", "disabled": true, "description": "pending | reviewed | actioned | dismissed" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    },
+                    {
+                      "key": "status",
+                      "value": "pending",
+                      "disabled": true,
+                      "description": "pending | reviewed | actioned | dismissed"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "report"
                   ]
                 },
                 "description": "Roles: admin, super_admin"
@@ -1818,15 +2470,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"actioned\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/report/:id/status" },
+                "url": "{{baseUrl}}/report/:id/status",
                 "description": "Roles: admin, super_admin\n\nstatus: pending | reviewed | actioned | dismissed"
               }
             }
@@ -1839,12 +2497,24 @@
               "name": "Get All Moderation Logs",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/moderation-log?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "moderation-log"
                   ]
                 },
                 "description": "Roles: admin, super_admin\n\nFull audit trail."
@@ -1855,15 +2525,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"action\": \"block_user\",\n  \"targetType\": \"user\",\n  \"targetId\": \"64f1a2b3c4d5e6f7a8b9c0d1\",\n  \"reason\": \"Multiple harassment reports confirmed\",\n  \"metadata\": {\n    \"reportIds\": [\"64f9...\", \"64fa...\"]\n  }\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/moderation-log" },
+                "url": "{{baseUrl}}/moderation-log",
                 "description": "Roles: admin, super_admin\n\naction: block_user | unblock_user | delete_job | edit_cms | review_report\ntargetType: user | job | content | report"
               }
             }
@@ -1876,8 +2552,8 @@
               "name": "Get All Plans (including inactive)",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription-plan/all" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription-plan/all",
                 "description": "Roles: admin, super_admin\n\nIncludes inactive plans. Public GET /subscription-plan shows only active."
               }
             },
@@ -1886,15 +2562,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"name\": \"Pro\",\n  \"slug\": \"pro-monthly\",\n  \"audience\": \"job_seeker\",\n  \"price\": \"29.99\",\n  \"currency\": \"USD\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"features\": [\"Unlimited applications\", \"ATS check\", \"Priority support\"],\n  \"jobPostLimit\": null,\n  \"isActive\": true,\n  \"sortOrder\": 1\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/subscription-plan" },
+                "url": "{{baseUrl}}/subscription-plan",
                 "description": "Roles: admin, super_admin\n\naudience: job_seeker | recruiter | instructor | all\nbillingInterval: month | year\nprice: string decimal e.g. '29.99'"
               }
             },
@@ -1903,15 +2585,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"price\": \"24.99\",\n  \"features\": [\"Unlimited applications\", \"ATS check\", \"Priority support\", \"Profile boost\"],\n  \"isActive\": true,\n  \"sortOrder\": 2\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/subscription-plan/:id" },
+                "url": "{{baseUrl}}/subscription-plan/:id",
                 "description": "Roles: admin, super_admin"
               }
             },
@@ -1919,8 +2607,8 @@
               "name": "Deactivate Plan",
               "request": {
                 "method": "DELETE",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
-                "url": { "raw": "{{baseUrl}}/subscription-plan/:id" },
+                "header": [],
+                "url": "{{baseUrl}}/subscription-plan/:id",
                 "description": "Roles: admin, super_admin\n\nSets isActive = false. Existing subscribers are unaffected."
               }
             }
@@ -1933,12 +2621,24 @@
               "name": "Get All Transactions",
               "request": {
                 "method": "GET",
-                "header": [{ "key": "Authorization", "value": "Bearer {{accessToken}}" }],
+                "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/transaction?page=1&limit=20",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "20" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "20"
+                    }
+                  ],
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "transaction"
                   ]
                 },
                 "description": "Roles: admin, super_admin\n\nAll platform transactions with user info populated."
@@ -1949,15 +2649,21 @@
               "request": {
                 "method": "PATCH",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"status\": \"success\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/transaction/:id/status" },
+                "url": "{{baseUrl}}/transaction/:id/status",
                 "description": "Roles: admin, super_admin\n\nManually correct a transaction status (e.g. webhook failure).\nstatus: pending | success | failed"
               }
             }
@@ -1971,7 +2677,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content" },
+                "url": "{{baseUrl}}/content",
                 "description": "Roles: none (public)"
               }
             },
@@ -1980,7 +2686,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content/about_us" }
+                "url": "{{baseUrl}}/content/about_us"
               }
             },
             {
@@ -1988,7 +2694,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content/privacy_policy" }
+                "url": "{{baseUrl}}/content/privacy_policy"
               }
             },
             {
@@ -1996,7 +2702,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content/terms" }
+                "url": "{{baseUrl}}/content/terms"
               }
             },
             {
@@ -2004,7 +2710,7 @@
               "request": {
                 "method": "GET",
                 "header": [],
-                "url": { "raw": "{{baseUrl}}/content/support" }
+                "url": "{{baseUrl}}/content/support"
               }
             },
             {
@@ -2012,15 +2718,21 @@
               "request": {
                 "method": "POST",
                 "header": [
-                  { "key": "Authorization", "value": "Bearer {{accessToken}}" },
-                  { "key": "Content-Type", "value": "application/json" }
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
                 ],
                 "body": {
                   "mode": "raw",
                   "raw": "{\n  \"type\": \"about_us\",\n  \"title\": \"About GeniusRX\",\n  \"body\": \"<h1>About Us</h1><p>GeniusRX is a healthcare career platform connecting professionals with opportunities.</p>\"\n}",
-                  "options": { "raw": { "language": "json" } }
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
                 },
-                "url": { "raw": "{{baseUrl}}/content" },
+                "url": "{{baseUrl}}/content",
                 "description": "Roles: admin, super_admin\n\ntype: about_us | privacy_policy | terms | support\nbody: HTML or markdown content"
               }
             }
@@ -2028,5 +2740,15 @@
         }
       ]
     }
-  ]
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  }
 }
