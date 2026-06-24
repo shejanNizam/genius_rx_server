@@ -16,6 +16,12 @@ const app: Application = express();
 app.use(helmet()); // security
 app.use(morgan(configs.node_env === "production" ? "combined" : "dev")); // logging
 
+// Stripe webhook needs raw body — must be before express.json()
+app.use(
+  "/api/v1/subscription/webhook",
+  express.raw({ type: "application/json" }),
+);
+
 // parsers
 app.use(express.json());
 app.set("trust proxy", 1); // trust first proxy for secure cookies in production
@@ -41,7 +47,7 @@ app.use(passport.session());
 app.use("/api/v1", router);
 
 const test = (req: Request, res: Response) => {
-  res.send(`Hello from Tour Management Server`);
+  res.send(`Hello from Genius Rx Server`);
 };
 
 app.get(`/`, test);

@@ -17,6 +17,7 @@ const subscriptionSchema = new Schema<ISubscription>(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     autoRenew: { type: Boolean, default: false },
+    stripeSessionId: { type: String },
   },
   { timestamps: true, versionKey: false },
 );

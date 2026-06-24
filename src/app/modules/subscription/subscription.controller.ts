@@ -11,6 +11,24 @@ const startTrial = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.CREATED, success: true, message: "7-day trial started", data: sub });
 });
 
+const createCheckoutSession = catchAsync(async (req: Request, res: Response) => {
+  const { _id: userId } = req.user as JwtPayload;
+  const { planId } = req.body;
+  const result = await SubscriptionServices.createCheckoutSession(userId, planId);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Checkout session created", data: result });
+});
+
+const stripeWebhook = async (req: Request, res: Response) => {
+  const signature = req.headers["stripe-signature"] as string;
+  try {
+    await SubscriptionServices.handleWebhook(req.body as Buffer, signature);
+    res.json({ received: true });
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Webhook error";
+    res.status(httpStatus.BAD_REQUEST).json({ error: message });
+  }
+};
+
 const subscribe = catchAsync(async (req: Request, res: Response) => {
   const { _id: userId } = req.user as JwtPayload;
   const sub = await SubscriptionServices.subscribe(userId, req.body);
@@ -37,6 +55,8 @@ const cancelSubscription = catchAsync(async (req: Request, res: Response) => {
 
 export const SubscriptionControllers = {
   startTrial,
+  createCheckoutSession,
+  stripeWebhook,
   subscribe,
   getMySubscription,
   getSubscriptionHistory,

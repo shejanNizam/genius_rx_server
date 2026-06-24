@@ -2,13 +2,13 @@
   "info": {
     "_postman_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
     "name": "GeniusRX — Healthcare Hub API",
-    "description": "Role-wise organized API collection for GeniusRX Healthcare Hub.\n\n**Folder structure:**\n- 🔐 Auth & OTP — shared by all roles (register, login, OTP, password)\n- 📤 Upload — shared by all roles\n- 👤 Job Seeker — all screens: onboarding, jobs, applications, resume, ATS, messages, etc.\n- 🏢 Recruiter — all screens: company setup, job management, applicants, browse seekers\n- 🎓 Instructor — all screens: profile setup, browse seekers, messages\n- 🛡️ Admin / Super Admin — dashboard, user management, jobs, reports, CMS\n\n**Quick start:**\n1. Import this collection\n2. Open '🔐 Auth & OTP → Login' → hit Send → tokens are saved automatically\n3. All other requests use {{accessToken}} from collection variables\n\n**Base URL:** http://localhost:5000/api/v1",
+    "description": "Role-wise organized API collection for GeniusRX Healthcare Hub.\n\n**Folder structure:**\n- 🔐 Auth & OTP — shared by all roles (register, login, OTP, password)\n- 📤 Upload — shared by all roles\n- 👤 Job Seeker — all screens: onboarding, jobs, applications, resume, ATS, messages, etc.\n- 🏢 Recruiter — all screens: company setup, job management, applicants, browse seekers\n- 🎓 Instructor — all screens: profile setup, browse seekers, messages\n- 🛡️ Admin / Super Admin — dashboard, user management, jobs, reports, CMS\n\n**Quick start:**\n1. Import this collection\n2. Open '🔐 Auth & OTP → Login' → hit Send → tokens are saved automatically\n3. All other requests use {{accessToken}} from collection variables\n\n**Base URL:** https://nizamshejan7000.merinasib.shop/api/v1",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
     {
       "key": "baseUrl",
-      "value": "http://localhost:5000/api/v1",
+      "value": "https://nizamshejan7000.merinasib.shop/api/v1",
       "type": "string"
     },
     {
@@ -1080,6 +1080,29 @@
               }
             },
             {
+              "name": "Create Stripe Checkout Session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/subscription/checkout",
+                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session for a subscription plan.\n\nResponse:\n{\n  \"url\": \"https://checkout.stripe.com/...\",\n  \"sessionId\": \"cs_test_...\"\n}\n\nRedirect the user to 'url' to complete payment.\nAfter payment, Stripe webhook (POST /subscription/webhook) activates the subscription automatically.\n\nOn success: user redirected to {{frontendUrl}}/subscription/success?session_id=...\nOn cancel:  user redirected to {{frontendUrl}}/subscription/cancel"
+              }
+            },
+            {
               "name": "Subscribe to a Plan",
               "request": {
                 "method": "POST",
@@ -1099,7 +1122,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription",
-                "description": "Roles: any\n\nCall after a successful payment (POST /transaction).\nSets user.accessStatus = 'subscribed'."
+                "description": "Roles: any\n\nManual subscribe (without Stripe). Use 'Create Stripe Checkout Session' instead for real payments.\nSets user.accessStatus = 'subscribed'."
               }
             },
             {
@@ -1687,6 +1710,29 @@
               }
             },
             {
+              "name": "Create Stripe Checkout Session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/subscription/checkout",
+                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment."
+              }
+            },
+            {
               "name": "Subscribe to a Plan",
               "request": {
                 "method": "POST",
@@ -1706,6 +1752,32 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription"
+              }
+            },
+            {
+              "name": "Get Subscription History",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/history",
+                "description": "Roles: any"
+              }
+            },
+            {
+              "name": "Get My Transactions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transaction/my?page=1&limit=10",
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ],
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "my"]
+                },
+                "description": "Roles: any\n\nBilling history for the logged-in user."
               }
             },
             {
@@ -2128,6 +2200,29 @@
               }
             },
             {
+              "name": "Create Stripe Checkout Session",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\"\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/subscription/checkout",
+                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment."
+              }
+            },
+            {
               "name": "Subscribe to a Plan",
               "request": {
                 "method": "POST",
@@ -2147,6 +2242,32 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription"
+              }
+            },
+            {
+              "name": "Get Subscription History",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/history",
+                "description": "Roles: any"
+              }
+            },
+            {
+              "name": "Get My Transactions",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/transaction/my?page=1&limit=10",
+                  "query": [
+                    { "key": "page", "value": "1" },
+                    { "key": "limit", "value": "10" }
+                  ],
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "my"]
+                },
+                "description": "Roles: any\n\nBilling history for the logged-in user."
               }
             },
             {

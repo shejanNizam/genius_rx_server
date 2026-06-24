@@ -14,6 +14,7 @@ export interface ISubscriptionInitial {
   startDate: Date;
   endDate: Date;
   autoRenew: boolean;
+  stripeSessionId?: string;
 }
 
 export type ISubscription = ISubscriptionInitial & Document;
