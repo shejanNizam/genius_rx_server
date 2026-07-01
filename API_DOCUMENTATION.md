@@ -1,7 +1,7 @@
 # GeniusRX — Healthcare Hub · API Documentation
 
-> **Version:** 1.1.0  
-> **Base URL:** `http://localhost:5000/api/v1`  
+> **Version:** 1.2.0  
+> **Base URL:** `http://localhost:7000/api/v1`  
 > **Production URL:** *(set by DevOps)*  
 > **Auth:** JWT Bearer Token (`Authorization: Bearer <accessToken>`)
 
@@ -39,6 +39,7 @@
    - [Job Management](#92-job-management)
    - [Applications (Recruiter)](#93-applications-recruiter)
    - [Browse Job Seekers (Recruiter)](#94-browse-job-seekers-recruiter)
+   - [Recruiter Dashboard Stats](#95-recruiter-dashboard-stats)
 10. [Instructor APIs](#10-instructor-apis)
     - [Instructor Profile](#101-instructor-profile)
     - [Browse Job Seekers (Instructor)](#102-browse-job-seekers-instructor)
@@ -83,7 +84,7 @@ GeniusRX is a healthcare career platform with three primary user roles and two a
 ## 2. Base URL & Environments
 
 ```
-Development:  http://localhost:5000/api/v1
+Development:  http://localhost:7000/api/v1
 Production:   https://your-domain.com/api/v1
 ```
 
@@ -229,7 +230,7 @@ This section maps each role's app screens to the API calls needed. Use this as y
 | **Start Trial** | `POST /subscription/trial` |
 | **Register Device** | `POST /device-token` |
 | **Company Profile Setup** | `PUT /recruiter-profile`, `POST /upload` (logo) |
-| **Home / Dashboard** | `GET /job/my`, `GET /recruiter-profile/my` |
+| **Home / Dashboard** | `GET /job/my`, `GET /recruiter-profile/my`, `GET /stats/recruiter` |
 | **Post a Job** | `POST /job` |
 | **My Jobs** | `GET /job/my` (filter by `status`) |
 | **Edit Job** | `PATCH /job/:id` |
@@ -296,7 +297,7 @@ This section maps each role's app screens to the API calls needed. Use this as y
 | **Moderation Log** | `GET /moderation-log`, `POST /moderation-log` |
 | **Subscription Plans** | `GET /subscription-plan/all`, `POST /subscription-plan`, `PATCH /subscription-plan/:id`, `DELETE /subscription-plan/:id` |
 | **Transactions** | `GET /transaction`, `PATCH /transaction/:id/status` |
-| **Content Management** | `GET /content`, `GET /content/:type`, `POST /content` |
+| **Content Management** | `GET /content`, `GET /content/:type`, `PUT /content/:type` |
 
 ---
 
@@ -325,7 +326,8 @@ Content-Type: multipart/form-data
   "success": true,
   "message": "1 file(s) uploaded successfully",
   "data": {
-    "url": "https://res.cloudinary.com/your-cloud/image/upload/v1/genius_rx/uuid.jpg"
+    "url": "https://res.cloudinary.com/your-cloud/image/upload/v1/genius_rx/uuid.jpg",
+    "publicId": "genius_rx/uuid-filename"
   }
 }
 ```
@@ -336,17 +338,13 @@ Content-Type: multipart/form-data
   "statusCode": 200,
   "success": true,
   "message": "3 file(s) uploaded successfully",
-  "data": {
-    "url": [
-      "https://res.cloudinary.com/.../file1.pdf",
-      "https://res.cloudinary.com/.../file2.jpg",
-      "https://res.cloudinary.com/.../file3.png"
-    ]
-  }
+  "data": [
+    { "url": "https://res.cloudinary.com/.../file1.pdf", "publicId": "genius_rx/uuid-file1" },
+    { "url": "https://res.cloudinary.com/.../file2.jpg", "publicId": "genius_rx/uuid-file2" },
+    { "url": "https://res.cloudinary.com/.../file3.png", "publicId": "genius_rx/uuid-file3" }
+  ]
 }
 ```
-
-> **Note:** `publicId` is managed internally by the backend and is not included in the API response.
 
 **Limits:** Max 10 files per request. Max 10 MB per file.
 
@@ -1635,6 +1633,43 @@ See [Job Seeker Profile — Get All Profiles](#81-job-seeker-profile). Recruiter
 
 ---
 
+### 9.5 Recruiter Dashboard Stats
+
+```
+GET /api/v1/stats/recruiter
+Auth: Required (recruiter)
+```
+
+**Query params:**
+
+| Param | Type | Description |
+|---|---|---|
+| `month` | number | 1–12, defaults to current month |
+| `year` | number | e.g. `2024`, defaults to current year |
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "Recruiter dashboard stats retrieved",
+  "data": {
+    "totalJobs": 12,
+    "totalApplications": 87,
+    "applicationAnalytics": [
+      { "date": 1, "count": 3 },
+      { "date": 2, "count": 5 }
+    ]
+  }
+}
+```
+
+- `totalJobs` — recruiter's non-deleted job count.
+- `totalApplications` — total applications received across all of the recruiter's jobs (all-time).
+- `applicationAnalytics` — daily application counts for the given `month`/`year`, used to draw a chart. `date` is the day-of-month (1–31); days with zero applications are omitted.
+
+---
+
 ## 10. Instructor APIs
 
 > **Auth:** All endpoints require `Authorization: Bearer <accessToken>` and `role: instructor` unless noted.
@@ -2179,7 +2214,7 @@ Auth: Required (admin, super_admin)
 
 ```
 DELETE /api/v1/subscription-plan/:id
-Auth: Required (admin, super_admin)
+Auth: Required (super_admin only)
 ```
 
 Sets `isActive: false`. Hides plan from public listing. Existing subscribers are unaffected.
@@ -2237,15 +2272,18 @@ Auth: None
 
 #### Create or Update Content Page
 
+Upsert — always `PUT` to a specific `:type`; creates the page on first call, updates it afterward. `version` auto-increments on each update.
+
 ```
-POST /api/v1/content
+PUT /api/v1/content/:type
 Auth: Required (admin, super_admin)
 ```
+
+**`:type` values:** `about_us | privacy_policy | terms | support`
 
 **Request body:**
 ```json
 {
-  "type": "about_us",
   "title": "About GeniusRX",
   "body": "<h1>About Us</h1><p>GeniusRX is a healthcare career platform...</p>"
 }

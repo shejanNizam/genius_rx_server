@@ -1432,6 +1432,34 @@
                 "url": "{{baseUrl}}/job/:id",
                 "description": "Roles: recruiter (must own the job)\n\nSets isDeleted = true."
               }
+            },
+            {
+              "name": "Get Recruiter Dashboard Stats",
+              "request": {
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "{{baseUrl}}/stats/recruiter?month=7&year=2026",
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "stats",
+                    "recruiter"
+                  ],
+                  "query": [
+                    {
+                      "key": "month",
+                      "value": "7"
+                    },
+                    {
+                      "key": "year",
+                      "value": "2026"
+                    }
+                  ]
+                },
+                "description": "Roles: recruiter\n\nmonth and year are optional (default to current month/year).\n\nResponse data: { totalJobs, totalApplications, applicationAnalytics: [{ date, count }] }"
+              }
             }
           ]
         },
@@ -1771,11 +1799,22 @@
                 "url": {
                   "raw": "{{baseUrl}}/transaction/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
                   ],
-                  "host": ["{{baseUrl}}"],
-                  "path": ["transaction", "my"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "transaction",
+                    "my"
+                  ]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
               }
@@ -2261,11 +2300,22 @@
                 "url": {
                   "raw": "{{baseUrl}}/transaction/my?page=1&limit=10",
                   "query": [
-                    { "key": "page", "value": "1" },
-                    { "key": "limit", "value": "10" }
+                    {
+                      "key": "page",
+                      "value": "1"
+                    },
+                    {
+                      "key": "limit",
+                      "value": "10"
+                    }
                   ],
-                  "host": ["{{baseUrl}}"],
-                  "path": ["transaction", "my"]
+                  "host": [
+                    "{{baseUrl}}"
+                  ],
+                  "path": [
+                    "transaction",
+                    "my"
+                  ]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
               }
@@ -2730,7 +2780,7 @@
                 "method": "DELETE",
                 "header": [],
                 "url": "{{baseUrl}}/subscription-plan/:id",
-                "description": "Roles: admin, super_admin\n\nSets isActive = false. Existing subscribers are unaffected."
+                "description": "Roles: super_admin only\n\nSets isActive = false. Existing subscribers are unaffected."
               }
             }
           ]
@@ -2837,7 +2887,7 @@
             {
               "name": "Create or Update Content Page",
               "request": {
-                "method": "POST",
+                "method": "PUT",
                 "header": [
                   {
                     "key": "Content-Type",
@@ -2846,15 +2896,15 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"type\": \"about_us\",\n  \"title\": \"About GeniusRX\",\n  \"body\": \"<h1>About Us</h1><p>GeniusRX is a healthcare career platform connecting professionals with opportunities.</p>\"\n}",
+                  "raw": "{\n  \"title\": \"About GeniusRX\",\n  \"body\": \"<h1>About Us</h1><p>GeniusRX is a healthcare career platform connecting professionals with opportunities.</p>\"\n}",
                   "options": {
                     "raw": {
                       "language": "json"
                     }
                   }
                 },
-                "url": "{{baseUrl}}/content",
-                "description": "Roles: admin, super_admin\n\ntype: about_us | privacy_policy | terms | support\nbody: HTML or markdown content"
+                "url": "{{baseUrl}}/content/:type",
+                "description": "Roles: admin, super_admin\n\nUpsert — PUT to a specific :type. Creates the page on first call, updates it afterward (version auto-increments).\n\n:type values: about_us | privacy_policy | terms | support"
               }
             }
           ]

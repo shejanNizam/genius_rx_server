@@ -1,6 +1,8 @@
-# Tour Management Server
+# GeniusRX Server
 
-A production-ready REST API backend for a tour management platform built with **Node.js**, **Express**, **TypeScript**, and **MongoDB**. Features role-based access control, Google OAuth, Stripe payment integration, Cloudinary image uploads, Redis caching, OTP-based email verification, and PDF invoice generation.
+A production-ready REST API backend for **GeniusRX**, a healthcare career platform connecting job seekers, recruiters, and instructors. Built with **Node.js**, **Express**, **TypeScript**, and **MongoDB**. Features role-based access control, Google OAuth, Stripe subscription billing, Cloudinary uploads, Redis-backed real-time messaging, OTP-based email verification, and an ATS resume checker.
+
+For the full endpoint reference (request/response shapes, screen-to-API mapping, Flutter integration notes), see [API_DOCUMENTATION.md](./API_DOCUMENTATION.md). A ready-to-import Postman collection is available at [GeniusRX.postman_collection.json](./GeniusRX.postman_collection.json).
 
 ---
 
@@ -8,19 +10,31 @@ A production-ready REST API backend for a tour management platform built with **
 
 | Layer | Technology |
 |---|---|
-| Runtime | Node.js (ESM) |
+| Runtime | Node.js |
 | Framework | Express.js v5 |
 | Language | TypeScript |
 | Database | MongoDB + Mongoose |
-| Cache / Session | Redis |
+| Cache / Real-time | Redis (+ Socket.io Redis adapter) |
 | Auth | JWT (access + refresh tokens), Passport.js (Google OAuth + local) |
-| Payment | Stripe |
+| Payments | Stripe (checkout sessions + webhooks) |
 | File Uploads | Multer + Cloudinary |
 | Email | Nodemailer (SMTP) + EJS templates |
-| PDF | PDFKit |
+| Real-time messaging | Socket.io |
 | Validation | Zod |
 | Security | Helmet, Bcrypt, HTTP-only cookies |
 | Deployment | Vercel (serverless) |
+
+---
+
+## Roles
+
+| Role | Description |
+|---|---|
+| `job_seeker` | Healthcare professionals looking for jobs |
+| `recruiter` | Healthcare organizations posting jobs |
+| `instructor` | Healthcare educators / trainers |
+| `admin` | Platform moderator |
+| `super_admin` | Full platform control (identical to `admin`, plus exclusive access to a few destructive actions) |
 
 ---
 
@@ -30,37 +44,54 @@ A production-ready REST API backend for a tour management platform built with **
 src/
 ├── server.ts                  # Entry point — DB/Redis connect, graceful shutdown
 ├── app.ts                     # Express app, middleware setup
+├── socket/
+│   └── socket.ts               # Socket.io setup (real-time messaging & notifications)
 └── app/
     ├── config/
-    │   ├── index.ts           # Typed env config
+    │   ├── index.ts            # Typed env config
     │   ├── cloudinary.config.ts
     │   ├── multer.config.ts
-    │   ├── passport.ts        # Google OAuth + local strategy
+    │   ├── passport.ts         # Google OAuth + local strategy
     │   └── redis.config.ts
     ├── constants.ts
     ├── interfaces/
-    │   ├── index.d.ts         # Express Request augmentation
+    │   ├── index.d.ts          # Express Request augmentation
     │   └── error.types.ts
     ├── errorHelpers/
-    │   └── AppError.ts        # Custom operational error class
-    ├── helpers/               # Error normalizers (cast, duplicate, validation, zod)
+    │   └── AppError.ts         # Custom operational error class
+    ├── helpers/                # Error normalizers (cast, duplicate, validation, zod)
     ├── middlewares/
-    │   ├── checkAuth.ts       # JWT guard + RBAC
-    │   ├── validateRequest.ts # Zod schema validation
+    │   ├── checkAuth.ts        # JWT guard + RBAC
+    │   ├── validateRequest.ts  # Zod schema validation
     │   ├── globalErrorHandler.ts
     │   └── notFound.ts
     ├── routes/
-    │   └── index.ts           # Aggregates all module routes under /api/v1
+    │   └── index.ts            # Aggregates all module routes under /api/v1
     ├── modules/
-    │   ├── auth/              # Login, logout, refresh token, password, Google OAuth
-    │   ├── user/              # Register, profile, admin user management
-    │   ├── tour/              # Tours + tour types (CRUD, image upload)
-    │   ├── booking/           # Tour bookings
-    │   ├── payment/           # Payment records
-    │   ├── payment/           # Stripe payment gateway integration
-    │   ├── otp/               # OTP generation and verification
-    │   ├── division/          # Geographic divisions
-    │   └── stats/             # Admin dashboard statistics
+    │   ├── auth/                    # Login, logout, refresh token, password, Google OAuth
+    │   ├── user/                    # Register, profile, admin user management
+    │   ├── upload/                  # Cloudinary file uploads
+    │   ├── otp/                     # OTP generation and verification
+    │   ├── device_token/            # Push notification device tokens
+    │   ├── job_seeker_profile/      # Job seeker profile (experience, skills, education)
+    │   ├── recruiter_profile/       # Recruiter/company profile
+    │   ├── instructor_profile/      # Instructor profile
+    │   ├── resume/                  # Resume uploads
+    │   ├── ats_check/                # ATS resume compatibility checker
+    │   ├── job/                     # Job listings (CRUD)
+    │   ├── application/             # Job applications + interview tracking
+    │   ├── saved_job/                # Bookmarked jobs
+    │   ├── conversation/             # Messaging conversations
+    │   ├── message/                  # Chat messages
+    │   ├── block/                    # User block/unblock
+    │   ├── report/                   # User reports
+    │   ├── moderation_log/           # Admin moderation audit trail
+    │   ├── subscription_plan/        # Admin-configurable subscription tiers
+    │   ├── subscription/              # Trials, Stripe checkout, webhook, cancellation
+    │   ├── transaction/               # Payment transaction records
+    │   ├── notification/              # In-app notifications
+    │   ├── static_content/            # CMS pages (About, Privacy, Terms, Support)
+    │   └── stats/                     # Admin & recruiter dashboard statistics
     └── utils/
         ├── catchAsync.ts
         ├── sendResponse.ts
@@ -68,99 +99,42 @@ src/
         ├── setCookie.ts
         ├── jwt.ts
         ├── userTokens.ts
-        ├── QueryBuilder.ts    # Filterable/paginated query builder
-        ├── getTransactionId.ts
-        ├── invoice.ts         # PDF invoice generator
+        ├── QueryBuilder.ts     # Filterable/paginated query builder
         ├── seedAdmin.ts
         ├── seedSuperAdmin.ts
-        └── templates/         # EJS email templates (OTP, forgot password, invoice)
+        └── templates/          # EJS email templates (OTP, forgot password)
 ```
 
 ---
 
-## API Endpoints
+## API Overview
 
-All routes are prefixed with `/api/v1`.
+All routes are prefixed with `/api/v1`. See [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) for full request/response payloads.
 
-### Auth — `/api/v1/auth`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/login` | Public | Credentials login |
-| POST | `/refresh-token` | Public | Get new access token |
-| POST | `/logout` | Public | Logout |
-| POST | `/change-password` | All roles | Change password |
-| POST | `/set-password` | All roles | Set password (OAuth users) |
-| POST | `/forgot-password` | Public | Send reset OTP via email |
-| POST | `/reset-password` | All roles | Reset password with OTP |
-| GET | `/google` | Public | Initiate Google OAuth |
-| GET | `/google/callback` | Public | Google OAuth callback |
-
-### User — `/api/v1/user`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/register` | Public | Register new user |
-| GET | `/all-users` | Admin, Super Admin | Get all users |
-| GET | `/me` | All roles | Get own profile |
-| GET | `/:id` | Admin, Super Admin | Get user by ID |
-| PATCH | `/:id` | All roles | Update user profile |
-
-### Tour — `/api/v1/tour`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/create` | Admin, Super Admin | Create tour (with image upload) |
-| GET | `/all` | Public | Get all tours |
-| GET | `/:slug` | Public | Get single tour by slug |
-| PATCH | `/:id` | Admin, Super Admin | Update tour |
-| DELETE | `/:id` | Public | Delete tour |
-| POST | `/create-tour-type` | Public | Create tour type |
-| GET | `/tour-types/all` | Public | Get all tour types |
-| GET | `/tour-types/:id` | Public | Get single tour type |
-| PATCH | `/tour-types/:id` | Public | Update tour type |
-| DELETE | `/tour-types/:id` | Public | Delete tour type |
-
-### Booking — `/api/v1/booking`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| POST | `/create` | All roles | Create a booking |
-
-### Payment — `/api/v1/payment`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| GET | `/invoice/:paymentId` | All roles | Get invoice download URL |
-
-### OTP — `/api/v1/otp`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| — | — | — | OTP send and verify |
-
-### Division — `/api/v1/division`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| — | — | — | Geographic division CRUD |
-
-### Stats — `/api/v1/stats`
-
-| Method | Endpoint | Access | Description |
-|--------|----------|--------|-------------|
-| — | — | — | Admin dashboard statistics |
-
----
-
-## Roles
-
-| Role | Description |
-|------|-------------|
-| `SUPER_ADMIN` | Full platform access |
-| `ADMIN` | Manage tours, users, bookings |
-| `USER` | Browse tours, create bookings |
-| `GUIDE` | Tour guide role |
+| Module | Base Path | Highlights |
+|---|---|---|
+| Auth | `/auth` | Login, refresh token, logout, change/forgot/reset password, Google OAuth |
+| User | `/user` | Register, self profile (`/me`), admin user management |
+| Upload | `/upload` | Multipart upload to Cloudinary (1–10 files) |
+| OTP | `/otp` | Send/verify email OTP |
+| Device Token | `/device-token` | Register/remove push notification tokens |
+| Job Seeker Profile | `/job-seeker-profile` | Upsert profile, browse by recruiters/instructors |
+| Recruiter Profile | `/recruiter-profile` | Company profile management |
+| Instructor Profile | `/instructor-profile` | Instructor profile management |
+| Resume | `/resume` | Upload, list, set default, delete resumes |
+| ATS Check | `/ats-check` | Resume ATS compatibility scoring |
+| Job | `/job` | Post, browse, update, soft/force delete jobs |
+| Application | `/application` | Apply to jobs, track/update application status |
+| Saved Job | `/saved-job` | Bookmark and unbookmark jobs |
+| Conversation / Message | `/conversation`, `/message` | Role-restricted real-time messaging |
+| Block / Report | `/block`, `/report` | User safety controls |
+| Moderation Log | `/moderation-log` | Admin action audit trail |
+| Subscription Plan | `/subscription-plan` | Admin-managed pricing tiers |
+| Subscription | `/subscription` | Free trial, Stripe checkout, Stripe webhook, cancellation |
+| Transaction | `/transaction` | Payment records |
+| Notification | `/notification` | In-app notification inbox |
+| Static Content | `/content` | CMS pages (About, Privacy, Terms, Support) |
+| Stats | `/stats` | Admin overview/earnings dashboards, recruiter dashboard |
 
 ---
 
@@ -168,11 +142,23 @@ All routes are prefixed with `/api/v1`.
 
 ```json
 {
-  "success": true,
   "statusCode": 200,
+  "success": true,
   "message": "Operation successful",
-  "meta": { "page": 1, "limit": 10, "total": 100 },
-  "data": {}
+  "data": {},
+  "meta": { "page": 1, "limit": 10, "total": 100, "totalPage": 10 }
+}
+```
+
+**Error format:**
+
+```json
+{
+  "success": false,
+  "message": "Error description",
+  "errorSources": [
+    { "path": "email", "message": "Invalid email address format." }
+  ]
 }
 ```
 
@@ -180,65 +166,66 @@ All routes are prefixed with `/api/v1`.
 
 ## Environment Variables
 
-Create a `.env` file in the project root:
+Copy [.env.example](./.env.example) to `.env` and fill in the values:
 
 ```env
 # Server
-PORT=5000
+PORT=7000
 NODE_ENV=development
 
 # Database
-DATABASE_URL=mongodb://localhost:27017/tour_management
+DATABASE_URL=mongodb://localhost/genius-rx
 
 # JWT
-JWT_ACCESS_SECRET=your_access_secret
+JWT_ACCESS_SECRET=your_jwt_access_secret
 JWT_ACCESS_EXPIRES=1d
-JWT_REFRESH_SECRET=your_refresh_secret
+JWT_REFRESH_SECRET=your_jwt_refresh_secret
 JWT_REFRESH_EXPIRES=30d
 
-# Auth
-BCRYPT_SALT_ROUND=12
-DEFAULT_PASSWORD=default_password
+# Bcrypt
+BCRYPT_SALT_ROUND=10
 
-# Seeded Admin Accounts
-SUPER_ADMIN_EMAIL=superadmin@example.com
-SUPER_ADMIN_PASSWORD=superadmin_password
+# Seeded Admin Accounts (auto-created on startup)
+SUPER_ADMIN_EMAIL=super_admin@example.com
+SUPER_ADMIN_PASSWORD=your_super_admin_password
 ADMIN_EMAIL=admin@example.com
-ADMIN_PASSWORD=admin_password
+ADMIN_PASSWORD=your_admin_password
 
 # Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=your_google_client_secret
-GOOGLE_CALLBACK_URL=http://localhost:5000/api/v1/auth/google/callback
+GOOGLE_CALLBACK_URL=http://localhost:7000/api/v1/auth/google/callback
 
-# Session
-EXPRESS_SESSION_SECRET=your_session_secret
+# Express Session
+EXPRESS_SESSION_SECRET=your_express_session_secret
 
-# CORS
-FRONTEND_URL=http://localhost:3000
-
-# Redis
-REDIS_HOST=localhost
-REDIS_PORT=6379
-REDIS_USERNAME=
-REDIS_PASSWORD=
-
-# Cloudinary
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
-
-# Email (SMTP)
-SMTP_HOST=smtp.gmail.com
-SMTP_PORT=587
-SMTP_USER=your_email@gmail.com
-SMTP_PASS=your_app_password
-SMTP_FROM=your_email@gmail.com
+# Frontend URL (CORS + OAuth/email redirects)
+FRONTEND_URL=http://localhost:5173
 
 # Stripe
 STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
 STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
+
+# Cloudinary
+CLOUDINARY_CLOUD_NAME=your_cloudinary_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# SMTP (email)
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_USER=your_smtp_user@example.com
+SMTP_PASS=your_smtp_password
+SMTP_FROM=your_smtp_user@example.com
+
+# Redis
+REDIS_HOST=your_redis_host
+REDIS_PORT=6379
+REDIS_USERNAME=default
+REDIS_PASSWORD=your_redis_password
 ```
+
+> **Stripe webhook note:** `POST /api/v1/subscription/webhook` receives the raw request body (mounted before `express.json()`) and verifies the signature with `STRIPE_WEBHOOK_SECRET`. Point your Stripe CLI/dashboard webhook at `<your-domain>/api/v1/subscription/webhook`.
 
 ---
 
@@ -248,21 +235,22 @@ STRIPE_WEBHOOK_SECRET=whsec_your_stripe_webhook_secret
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/shejanNizam/tour_management_server.git
-cd tour_management_server
+git clone https://github.com/shejanNizam/genius_rx_server.git
+cd genius_rx_server
 
 # 2. Install dependencies
 npm install
 
-# 3. Create .env file and fill in environment variables (see above)
+# 3. Copy the env template and fill in the values
+cp .env.example .env
 
-# 4. Start development server
+# 4. Start the development server (hot-reload)
 npm run dev
 
 # 5. Build for production
 npm run build
 
-# 6. Start production server
+# 6. Start the production server
 npm start
 ```
 
@@ -273,7 +261,7 @@ npm start
 | Script | Description |
 |--------|-------------|
 | `npm run dev` | Start dev server with hot-reload via `tsx watch` |
-| `npm run build` | Compile TypeScript to `dist/` |
+| `npm run build` | Compile TypeScript to `dist/` and copy email templates |
 | `npm start` | Run compiled server from `dist/server.js` |
 | `npm run lint` | Run ESLint |
 
@@ -286,4 +274,15 @@ npm start
 - **Vercel serverless**: Exports the Express app for Vercel's serverless runtime.
 - **Modular architecture**: Each feature is self-contained with its own controller, service, model, validation, and route.
 - **QueryBuilder**: Reusable utility for filtering, sorting, and paginating Mongoose queries.
-- **PDF invoices**: Generates booking invoices with PDFKit, delivered via email using EJS templates.
+- **Subscription billing**: 7-day free trial per user, Stripe Checkout for paid plans, webhook-driven activation, and an `accessStatus` gate (`trial | subscribed | locked`) enforced across the API.
+- **Real-time messaging**: Socket.io (with Redis adapter for horizontal scaling) powers conversations, typing indicators, read receipts, and live notification pushes. Messaging is role-restricted — recruiters must initiate contact with job seekers; job seekers and instructors can message each other freely.
+- **ATS resume checker**: Job seekers can score their resumes for ATS compatibility.
+- **Trust & safety**: User blocking, reporting, and an admin moderation audit log.
+- **CMS**: Admin-editable static content pages (About, Privacy, Terms, Support) served publicly.
+
+---
+
+## Documentation
+
+- [API_DOCUMENTATION.md](./API_DOCUMENTATION.md) — full endpoint reference, auth flow, role-wise screen → API map, and Flutter integration guide.
+- [GeniusRX.postman_collection.json](./GeniusRX.postman_collection.json) — importable Postman collection organized by role, with sample request bodies and environment variables (`baseUrl`, `accessToken`, `refreshToken`, `userId`).
