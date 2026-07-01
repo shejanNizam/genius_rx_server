@@ -589,12 +589,8 @@
                       "description": "Full-text search on title and skills"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "job"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["job"]
                 },
                 "description": "Roles: none (public — no auth needed)\n\nOptional filters: jobType, jobLevel, locationType, search\nToggle disabled params above to use them."
               }
@@ -660,13 +656,8 @@
                       "description": "applied | viewed | shortlisted | selected | rejected"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "application",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["application", "my"]
                 },
                 "description": "Roles: job_seeker\n\nTrack all your job applications and their statuses."
               }
@@ -716,13 +707,8 @@
                       "value": "10"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "saved-job",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["saved-job", "my"]
                 },
                 "description": "Roles: job_seeker"
               }
@@ -870,13 +856,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "message",
-                    ":conversationId"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["message", ":conversationId"]
                 },
                 "description": "Roles: job_seeker (must be a participant)\n\nMessages sorted oldest → newest."
               }
@@ -918,12 +899,8 @@
                       "description": "Filter: true | false"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "notification"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["notification"]
                 },
                 "description": "Roles: any\n\nmeta.unreadCount = badge number.\nFilter by isRead=false to show only unread."
               }
@@ -1142,13 +1119,8 @@
                       "value": "10"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "transaction",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "my"]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
               }
@@ -1390,13 +1362,8 @@
                       "description": "active | inactive | closed"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "job",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["job", "my"]
                 },
                 "description": "Roles: recruiter"
               }
@@ -1440,13 +1407,8 @@
                 "header": [],
                 "url": {
                   "raw": "{{baseUrl}}/stats/recruiter?month=7&year=2026",
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "stats",
-                    "recruiter"
-                  ],
+                  "host": ["{{baseUrl}}"],
+                  "path": ["stats", "recruiter"],
                   "query": [
                     {
                       "key": "month",
@@ -1489,14 +1451,8 @@
                       "description": "applied | viewed | shortlisted | selected | rejected"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "application",
-                    "job",
-                    ":jobId"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["application", "job", ":jobId"]
                 },
                 "description": "Roles: recruiter (must own the job)\n\nReplace :jobId with the job's _id.\nFilter by status to show pipeline stages."
               }
@@ -1564,12 +1520,8 @@
                       "description": "Search by user name"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "job-seeker-profile"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["job-seeker-profile"]
                 },
                 "description": "Roles: recruiter\n\nSearch by name with ?search=\nFilter by lookingStatus and skills."
               }
@@ -1658,13 +1610,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "message",
-                    ":conversationId"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["message", ":conversationId"]
                 }
               }
             },
@@ -1698,12 +1645,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "notification"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["notification"]
                 },
                 "description": "meta.unreadCount = badge count."
               }
@@ -1808,13 +1751,8 @@
                       "value": "10"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "transaction",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "my"]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
               }
@@ -2009,12 +1947,8 @@
                       "description": "Search by user name"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "job-seeker-profile"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["job-seeker-profile"]
                 },
                 "description": "Roles: instructor\n\nBrowse and search job seekers."
               }
@@ -2103,13 +2037,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "message",
-                    ":conversationId"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["message", ":conversationId"]
                 }
               }
             },
@@ -2143,12 +2072,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "notification"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["notification"]
                 }
               }
             },
@@ -2309,13 +2234,8 @@
                       "value": "10"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "transaction",
-                    "my"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction", "my"]
                 },
                 "description": "Roles: any\n\nBilling history for the logged-in user."
               }
@@ -2440,13 +2360,8 @@
                       "description": "Search by name or email"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "user",
-                    "all-users"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["user", "all-users"]
                 },
                 "description": "Roles: admin, super_admin\n\nFilter by role, status, or search by name/email."
               }
@@ -2577,14 +2492,8 @@
                       "disabled": true
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "job",
-                    "admin",
-                    "all"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["job", "admin", "all"]
                 },
                 "description": "Roles: admin, super_admin\n\nSees ALL jobs regardless of status or soft-delete state.\nPublic endpoint only shows active, non-deleted jobs."
               }
@@ -2626,12 +2535,8 @@
                       "description": "pending | reviewed | actioned | dismissed"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "report"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["report"]
                 },
                 "description": "Roles: admin, super_admin"
               }
@@ -2681,12 +2586,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "moderation-log"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["moderation-log"]
                 },
                 "description": "Roles: admin, super_admin\n\nFull audit trail."
               }
@@ -2805,12 +2706,8 @@
                       "value": "20"
                     }
                   ],
-                  "host": [
-                    "{{baseUrl}}"
-                  ],
-                  "path": [
-                    "transaction"
-                  ]
+                  "host": ["{{baseUrl}}"],
+                  "path": ["transaction"]
                 },
                 "description": "Roles: admin, super_admin\n\nAll platform transactions with user info populated."
               }

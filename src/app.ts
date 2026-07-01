@@ -49,7 +49,6 @@ app.use("/api/v1", router);
 const test = (req: Request, res: Response) => {
   res.send(`Hello from Genius Rx Server`);
 };
-
 app.get(`/`, test);
 
 // global error handler

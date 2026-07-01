@@ -89,12 +89,12 @@ export const generatePdf = async (
         .fillColor(C.white)
         .fontSize(26)
         .font("Helvetica-Bold")
-        .text("TourCraft", M, 28);
+        .text("GeniusRX", M, 28);
       doc
         .fillColor(C.accent)
         .fontSize(10)
         .font("Helvetica")
-        .text("Your Journey, Our Passion", M, 60);
+        .text("Empowering Healthcare Careers", M, 60);
 
       // Invoice label + number (right side)
       doc
@@ -274,9 +274,9 @@ export const generatePdf = async (
         .fontSize(9)
         .font("Helvetica")
         .text(
-          "Thank you for choosing TourCraft! This invoice serves as your official payment confirmation. " +
+          "Thank you for choosing GeniusRX! This invoice serves as your official payment confirmation. " +
             "Please retain a copy for your records. For any questions or amendments, " +
-            "contact us at support@tourcraft.com within 7 days of your booking date.",
+            "contact us at support@geniusrx.com within 7 days of your booking date.",
           M,
           noteY + 20,
           { width: CW },
@@ -291,7 +291,7 @@ export const generatePdf = async (
         .fontSize(9)
         .font("Helvetica")
         .text(
-          "TourCraft  ·  support@tourcraft.com  ·  +1 (800) 123-4567  ·  www.tourcraft.com",
+          "GeniusRX  ·  support@geniusrx.com  ·  +1 (800) 123-4567  ·  www.geniusrx.com",
           0,
           807,
           { align: "center", width: PW },
