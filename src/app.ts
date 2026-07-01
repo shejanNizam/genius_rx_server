@@ -16,7 +16,9 @@ const app: Application = express();
 app.use(helmet()); // security
 app.use(morgan(configs.node_env === "production" ? "combined" : "dev")); // logging
 
-// Stripe webhook needs raw body — must be before express.json()
+// Stripe webhook needs the raw request body to verify the signature — this must
+// run before express.json() below, and is the only place raw-body parsing happens
+// for this route (do not duplicate it in subscription.route.ts).
 app.use(
   "/api/v1/subscription/webhook",
   express.raw({ type: "application/json" }),

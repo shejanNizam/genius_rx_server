@@ -7,7 +7,7 @@ const subscriptionSchema = new Schema<ISubscription>(
     planId: { type: Schema.Types.ObjectId, ref: "SubscriptionPlan" },
     status: {
       type: String,
-      enum: ["trialing", "active", "expired", "cancelled"],
+      enum: ["trialing", "active", "past_due", "expired", "cancelled"],
       default: "trialing",
     },
     billingInterval: { type: String, enum: ["month", "year"] },
@@ -17,6 +17,9 @@ const subscriptionSchema = new Schema<ISubscription>(
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     autoRenew: { type: Boolean, default: false },
+    cancelAtPeriodEnd: { type: Boolean, default: false },
+    stripeCustomerId: { type: String },
+    stripeSubscriptionId: { type: String },
     stripeSessionId: { type: String },
   },
   { timestamps: true, versionKey: false },
@@ -24,6 +27,7 @@ const subscriptionSchema = new Schema<ISubscription>(
 
 subscriptionSchema.index({ userId: 1, status: 1 });
 subscriptionSchema.index({ endDate: 1 });
+subscriptionSchema.index({ stripeSubscriptionId: 1 });
 
 export const Subscription = model<ISubscription>(
   "Subscription",

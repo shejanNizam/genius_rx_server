@@ -18,6 +18,12 @@ const createCheckoutSession = catchAsync(async (req: Request, res: Response) => 
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Checkout session created", data: result });
 });
 
+const createBillingPortalSession = catchAsync(async (req: Request, res: Response) => {
+  const { _id: userId } = req.user as JwtPayload;
+  const result = await SubscriptionServices.createBillingPortalSession(userId);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Billing portal session created", data: result });
+});
+
 const stripeWebhook = async (req: Request, res: Response) => {
   const signature = req.headers["stripe-signature"] as string;
   try {
@@ -30,8 +36,9 @@ const stripeWebhook = async (req: Request, res: Response) => {
 };
 
 const subscribe = catchAsync(async (req: Request, res: Response) => {
-  const { _id: userId } = req.user as JwtPayload;
-  const sub = await SubscriptionServices.subscribe(userId, req.body);
+  const { _id: adminUserId } = req.user as JwtPayload;
+  const { userId, ...payload } = req.body;
+  const sub = await SubscriptionServices.subscribe(userId || adminUserId, payload);
   sendResponse(res, { statusCode: httpStatus.CREATED, success: true, message: "Subscribed successfully", data: sub });
 });
 
@@ -53,12 +60,20 @@ const cancelSubscription = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Subscription cancelled", data: sub });
 });
 
+const reactivateSubscription = catchAsync(async (req: Request, res: Response) => {
+  const { _id: userId } = req.user as JwtPayload;
+  const sub = await SubscriptionServices.reactivateSubscription(userId);
+  sendResponse(res, { statusCode: httpStatus.OK, success: true, message: "Subscription reactivated", data: sub });
+});
+
 export const SubscriptionControllers = {
   startTrial,
   createCheckoutSession,
+  createBillingPortalSession,
   stripeWebhook,
   subscribe,
   getMySubscription,
   getSubscriptionHistory,
   cancelSubscription,
+  reactivateSubscription,
 };

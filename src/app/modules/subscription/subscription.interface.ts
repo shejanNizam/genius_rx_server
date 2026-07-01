@@ -1,7 +1,7 @@
 import { Document, Types } from "mongoose";
 import { BillingInterval } from "../subscription_plan/subscription_plan.interface";
 
-export type SubscriptionStatus = "trialing" | "active" | "expired" | "cancelled";
+export type SubscriptionStatus = "trialing" | "active" | "past_due" | "expired" | "cancelled";
 
 export interface ISubscriptionInitial {
   userId: Types.ObjectId;
@@ -14,6 +14,9 @@ export interface ISubscriptionInitial {
   startDate: Date;
   endDate: Date;
   autoRenew: boolean;
+  cancelAtPeriodEnd?: boolean;
+  stripeCustomerId?: string;
+  stripeSubscriptionId?: string;
   stripeSessionId?: string;
 }
 

@@ -75,7 +75,7 @@ GeniusRX is a healthcare career platform with three primary user roles and two a
 
 **Platform rules:**
 - Every new user gets a **7-day free trial** automatically after calling `POST /subscription/trial`
-- After trial expires, a paid subscription is required (`accessStatus: "locked"` = gate closed)
+- After trial expires, a paid subscription is required — purchased via Stripe Checkout (`POST /subscription/checkout`), which recurs automatically until cancelled (`accessStatus: "locked"` = gate closed)
 - File uploads are done separately — upload first via `/upload`, then send the returned URL in other requests
 - Messaging is role-restricted (see [Messaging section](#11-messaging-apis))
 
@@ -206,8 +206,8 @@ This section maps each role's app screens to the API calls needed. Use this as y
 | **My Resumes** | `GET /resume/my`, `PATCH /resume/:id/set-default`, `DELETE /resume/:id` |
 | **Inbox / Messages** | `GET /conversation`, `POST /conversation`, `GET /message/:conversationId`, `POST /message`, `PATCH /message/:conversationId/read` |
 | **Notifications** | `GET /notification`, `PATCH /notification/mark-all-read`, `PATCH /notification/:id/read` |
-| **Subscription Plans** | `GET /subscription-plan?audience=job_seeker`, `POST /subscription/trial`, `POST /transaction`, `POST /subscription` |
-| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `PATCH /subscription/cancel` |
+| **Subscription Plans** | `GET /subscription-plan?audience=job_seeker`, `POST /subscription/trial`, `POST /subscription/checkout` |
+| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `POST /subscription/portal`, `PATCH /subscription/cancel`, `PATCH /subscription/reactivate` |
 | **Profile / Edit Profile** | `GET /user/me`, `GET /job-seeker-profile/my`, `PATCH /user/:id`, `PUT /job-seeker-profile`, `POST /upload` |
 | **Settings — Change Password** | `POST /auth/change-password` |
 | **Settings — Forgot Password** | `POST /auth/forgot-password`, `POST /auth/reset-password` |
@@ -240,8 +240,8 @@ This section maps each role's app screens to the API calls needed. Use this as y
 | **Job Seeker Profile Detail** | `GET /job-seeker-profile/:id` |
 | **Message Job Seeker** | `POST /conversation` (initiates), `GET /conversation`, `POST /message`, `GET /message/:conversationId`, `PATCH /message/:conversationId/read` |
 | **Notifications** | `GET /notification`, `PATCH /notification/mark-all-read`, `PATCH /notification/:id/read` |
-| **Subscription Plans** | `GET /subscription-plan?audience=recruiter`, `POST /subscription/trial`, `POST /transaction`, `POST /subscription` |
-| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `PATCH /subscription/cancel` |
+| **Subscription Plans** | `GET /subscription-plan?audience=recruiter`, `POST /subscription/trial`, `POST /subscription/checkout` |
+| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `POST /subscription/portal`, `PATCH /subscription/cancel`, `PATCH /subscription/reactivate` |
 | **Profile / Edit Profile** | `GET /user/me`, `GET /recruiter-profile/my`, `PATCH /user/:id`, `PUT /recruiter-profile`, `POST /upload` |
 | **Settings — Change Password** | `POST /auth/change-password` |
 | **Settings — Delete Account** | `DELETE /user/me` |
@@ -267,8 +267,8 @@ This section maps each role's app screens to the API calls needed. Use this as y
 | **Job Seeker Profile Detail** | `GET /job-seeker-profile/:id` |
 | **Messages / Inbox** | `GET /conversation`, `POST /conversation`, `GET /message/:conversationId`, `POST /message`, `PATCH /message/:conversationId/read` |
 | **Notifications** | `GET /notification`, `PATCH /notification/mark-all-read`, `PATCH /notification/:id/read` |
-| **Subscription Plans** | `GET /subscription-plan?audience=instructor`, `POST /subscription/trial`, `POST /transaction`, `POST /subscription` |
-| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `PATCH /subscription/cancel` |
+| **Subscription Plans** | `GET /subscription-plan?audience=instructor`, `POST /subscription/trial`, `POST /subscription/checkout` |
+| **My Subscription** | `GET /subscription/my`, `GET /subscription/history`, `POST /subscription/portal`, `PATCH /subscription/cancel`, `PATCH /subscription/reactivate` |
 | **Profile / Edit Profile** | `GET /user/me`, `GET /instructor-profile/my`, `PATCH /user/:id`, `PUT /instructor-profile`, `POST /upload` |
 | **Settings — Change Password** | `POST /auth/change-password` |
 | **Settings — Delete Account** | `DELETE /user/me` |
@@ -891,7 +891,7 @@ POST /api/v1/subscription/trial
 Auth: Required (any role)
 ```
 
-No request body needed. Creates a `trialing` subscription.
+No request body needed. Creates a `trialing` subscription (no Stripe/card involved).
 
 - `endDate` = `startDate + 7 days`
 - Updates `user.accessStatus = "trial"`
@@ -899,18 +899,77 @@ No request body needed. Creates a `trialing` subscription.
 
 ---
 
-#### Subscribe to a Plan
-
-Call this after a successful payment transaction.
+#### Create Stripe Checkout Session (real payment — recommended)
 
 ```
-POST /api/v1/subscription
+POST /api/v1/subscription/checkout
 Auth: Required (any role)
 ```
 
 **Request body:**
 ```json
 {
+  "planId": "64fb..."
+}
+```
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "Checkout session created",
+  "data": {
+    "url": "https://checkout.stripe.com/c/pay/cs_test_...",
+    "sessionId": "cs_test_..."
+  }
+}
+```
+
+- Creates (or reuses) a Stripe Customer for the user, then a Checkout Session in **`subscription` mode** using the plan's Stripe Price (`plan.stripePriceId`, auto-created when the plan was created — see [12.6](#126-subscription-plans)).
+- Redirect the user to `data.url` to complete payment. Test-mode card: `4242 4242 4242 4242`, any future expiry/CVC.
+- On success, Stripe fires `checkout.session.completed` → the webhook activates the subscription automatically and sets `user.accessStatus = "subscribed"`. Renewals are billed by Stripe automatically and reflected via `invoice.paid` webhooks — no client action needed.
+- On success: redirected to `{{frontendUrl}}/subscription/success?session_id=...`
+- On cancel: redirected to `{{frontendUrl}}/subscription/cancel`
+
+---
+
+#### Create Billing Portal Session
+
+```
+POST /api/v1/subscription/portal
+Auth: Required (any role)
+```
+
+No request body needed. Requires the user to already have a Stripe customer (i.e. has completed at least one Checkout session).
+
+**Response:**
+```json
+{
+  "statusCode": 200,
+  "success": true,
+  "message": "Billing portal session created",
+  "data": { "url": "https://billing.stripe.com/p/session/..." }
+}
+```
+
+Redirect the user to `data.url` — Stripe's hosted portal lets them update their card, view invoices, or cancel, without you building any of that UI.
+
+---
+
+#### Subscribe to a Plan (manual / admin only — bypasses Stripe)
+
+```
+POST /api/v1/subscription
+Auth: Required (admin, super_admin only)
+```
+
+Use this only for admin backfills or testing. Use **Create Stripe Checkout Session** for real payments.
+
+**Request body:**
+```json
+{
+  "userId": "64f1...",
   "planId": "64fb...",
   "billingInterval": "month",
   "intervalCount": 1,
@@ -920,7 +979,7 @@ Auth: Required (any role)
 }
 ```
 
-Sets `user.accessStatus = "subscribed"`.
+`userId` is optional — omit it to subscribe the calling admin's own account, or pass a target user's `_id` to activate it on their behalf. Sets `user.accessStatus = "subscribed"`.
 
 ---
 
@@ -931,7 +990,7 @@ GET /api/v1/subscription/my
 Auth: Required (any role)
 ```
 
-Returns the active `trialing` or `active` subscription with plan details populated.
+Returns the active `trialing`, `active`, or `past_due` subscription with plan details populated.
 
 ---
 
@@ -951,7 +1010,19 @@ PATCH /api/v1/subscription/cancel
 Auth: Required (any role)
 ```
 
-Sets subscription `status: "cancelled"` and `user.accessStatus = "locked"`.
+- If the subscription is backed by Stripe: schedules cancellation at the end of the current billing period (`stripe.subscriptions.update(..., { cancel_at_period_end: true })`). Access remains active until then; `customer.subscription.deleted` finalizes it via webhook.
+- If it's a trial or manually-created subscription with no Stripe counterpart: cancels immediately and sets `user.accessStatus = "locked"`.
+
+---
+
+#### Reactivate Subscription
+
+```
+PATCH /api/v1/subscription/reactivate
+Auth: Required (any role)
+```
+
+Reverses a scheduled cancellation (`cancel_at_period_end: false`) before the current period ends. Returns `404` if there's no pending cancellation to reverse.
 
 ---
 
@@ -959,7 +1030,7 @@ Sets subscription `status: "cancelled"` and `user.accessStatus = "locked"`.
 
 #### Create Transaction
 
-Record a payment transaction. Call this alongside or before `POST /subscription`.
+Record a payment transaction manually. For Stripe Checkout payments, a `Transaction` record is created automatically by the webhook (initial `checkout.session.completed` and each `invoice.paid` renewal) — you only need this endpoint alongside the manual `POST /subscription` (admin backfill) flow.
 
 ```
 POST /api/v1/transaction
@@ -2197,6 +2268,8 @@ Auth: Required (admin, super_admin)
 - `billingInterval`: `month | year`
 - `price`: string decimal (e.g. `"29.99"`)
 
+> **Stripe sync:** Creating a plan automatically creates a Stripe Product + a recurring Price (`stripeProductId` / `stripePriceId`, stored on the plan but not required in the request body). `POST /subscription/checkout` uses `stripePriceId` directly, so a plan can't be checked out against until this succeeds.
+
 ---
 
 #### Update Plan
@@ -2208,6 +2281,8 @@ Auth: Required (admin, super_admin)
 
 **Request body** (all optional): same fields as Create.
 
+> **Stripe sync:** Stripe Prices are immutable. Changing `price`, `currency`, `billingInterval`, or `intervalCount` creates a **new** Stripe Price and archives the old one (`active: false`) — existing subscribers keep billing at the price they originally purchased; new checkouts use the new price. Changing `name` updates the existing Stripe Product in place.
+
 ---
 
 #### Deactivate Plan
@@ -2217,7 +2292,7 @@ DELETE /api/v1/subscription-plan/:id
 Auth: Required (super_admin only)
 ```
 
-Sets `isActive: false`. Hides plan from public listing. Existing subscribers are unaffected.
+Sets `isActive: false`. Hides plan from public listing and archives its Stripe Price (`active: false`, so it can no longer be used for new Checkout Sessions). Existing subscribers are unaffected.
 
 ---
 

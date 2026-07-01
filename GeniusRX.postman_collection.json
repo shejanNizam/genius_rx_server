@@ -1021,7 +1021,7 @@
                 "method": "GET",
                 "header": [],
                 "url": "{{baseUrl}}/subscription/my",
-                "description": "Roles: any\n\nActive trialing or subscribed plan with plan details."
+                "description": "Roles: any\n\nActive trialing, active, or past_due subscription with plan details."
               }
             },
             {
@@ -1031,29 +1031,6 @@
                 "header": [],
                 "url": "{{baseUrl}}/subscription/history",
                 "description": "Roles: any"
-              }
-            },
-            {
-              "name": "Record Payment Transaction",
-              "request": {
-                "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"subscriptionId\": \"64fca2b3c4d5e6f7a8b9c0d1\",\n  \"amount\": \"29.99\",\n  \"currency\": \"USD\",\n  \"gateway\": \"stripe\",\n  \"gatewayRef\": \"pi_3OxKLz2eZvKYlo2C1DnpMXfz\",\n  \"type\": \"subscription\",\n  \"status\": \"success\"\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/transaction",
-                "description": "Roles: any\n\nRecord payment before or alongside POST /subscription.\ntype: subscription | renewal\nstatus: pending | success | failed"
               }
             },
             {
@@ -1076,30 +1053,34 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription/checkout",
-                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session for a subscription plan.\n\nResponse:\n{\n  \"url\": \"https://checkout.stripe.com/...\",\n  \"sessionId\": \"cs_test_...\"\n}\n\nRedirect the user to 'url' to complete payment.\nAfter payment, Stripe webhook (POST /subscription/webhook) activates the subscription automatically.\n\nOn success: user redirected to {{frontendUrl}}/subscription/success?session_id=...\nOn cancel:  user redirected to {{frontendUrl}}/subscription/cancel"
+                "description": "Roles: any (must be logged in)\n\nCreates (or reuses) a Stripe Customer, then a Checkout Session in 'subscription' mode using the plan's Stripe Price.\n\nResponse:\n{\n  \"url\": \"https://checkout.stripe.com/...\",\n  \"sessionId\": \"cs_test_...\"\n}\n\nRedirect the user to 'url' to complete payment. Test mode card: 4242 4242 4242 4242, any future expiry/CVC.\nAfter payment, the Stripe webhook (POST /subscription/webhook) activates the subscription automatically and Stripe bills renewals on its own — no further client action needed.\n\nOn success: user redirected to {{frontendUrl}}/subscription/success?session_id=...\nOn cancel:  user redirected to {{frontendUrl}}/subscription/cancel"
               }
             },
             {
-              "name": "Subscribe to a Plan",
+              "name": "Create Billing Portal Session",
               "request": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"29.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/subscription",
-                "description": "Roles: any\n\nManual subscribe (without Stripe). Use 'Create Stripe Checkout Session' instead for real payments.\nSets user.accessStatus = 'subscribed'."
+                "header": [],
+                "url": "{{baseUrl}}/subscription/portal",
+                "description": "Roles: any (must have completed a Checkout session at least once, so a Stripe customer exists)\n\nCreates a Stripe Billing Portal session. Redirect the user to the returned 'url' — Stripe's hosted portal lets them update their card, view invoices, or cancel."
+              }
+            },
+            {
+              "name": "Cancel Subscription",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/cancel",
+                "description": "Roles: any\n\nIf backed by Stripe: schedules cancellation at period end (access continues until then). Otherwise (trial/manual): cancels immediately and sets user.accessStatus = 'locked'."
+              }
+            },
+            {
+              "name": "Reactivate Subscription",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/reactivate",
+                "description": "Roles: any\n\nReverses a scheduled cancellation before the current period ends. 404 if there's nothing to reverse."
               }
             },
             {
@@ -1122,16 +1103,7 @@
                   "host": ["{{baseUrl}}"],
                   "path": ["transaction", "my"]
                 },
-                "description": "Roles: any\n\nBilling history for the logged-in user."
-              }
-            },
-            {
-              "name": "Cancel Subscription",
-              "request": {
-                "method": "PATCH",
-                "header": [],
-                "url": "{{baseUrl}}/subscription/cancel",
-                "description": "Roles: any\n\nSets subscription status = 'cancelled' and user.accessStatus = 'locked'."
+                "description": "Roles: any\n\nBilling history for the logged-in user. Populated automatically by the Stripe webhook for real payments."
               }
             }
           ]
@@ -1700,29 +1672,16 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription/checkout",
-                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment."
+                "description": "Roles: any (must be logged in)\n\nCreates (or reuses) a Stripe Customer, then a Checkout Session in 'subscription' mode. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment and bills renewals on its own."
               }
             },
             {
-              "name": "Subscribe to a Plan",
+              "name": "Create Billing Portal Session",
               "request": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"49.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/subscription"
+                "header": [],
+                "url": "{{baseUrl}}/subscription/portal",
+                "description": "Roles: any (requires an existing Stripe customer)\n\nRedirect user to the returned 'url' to manage card/invoices/cancellation via Stripe's hosted portal."
               }
             },
             {
@@ -1762,7 +1721,17 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": "{{baseUrl}}/subscription/cancel"
+                "url": "{{baseUrl}}/subscription/cancel",
+                "description": "Roles: any\n\nSchedules cancellation at period end if backed by Stripe; cancels immediately otherwise."
+              }
+            },
+            {
+              "name": "Reactivate Subscription",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/reactivate",
+                "description": "Roles: any\n\nReverses a scheduled cancellation before period end."
               }
             }
           ]
@@ -2183,29 +2152,16 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription/checkout",
-                "description": "Roles: any (must be logged in)\n\nCreates a Stripe Checkout session. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment."
+                "description": "Roles: any (must be logged in)\n\nCreates (or reuses) a Stripe Customer, then a Checkout Session in 'subscription' mode. Redirect user to the returned 'url'.\nStripe webhook activates the subscription automatically after payment and bills renewals on its own."
               }
             },
             {
-              "name": "Subscribe to a Plan",
+              "name": "Create Billing Portal Session",
               "request": {
                 "method": "POST",
-                "header": [
-                  {
-                    "key": "Content-Type",
-                    "value": "application/json"
-                  }
-                ],
-                "body": {
-                  "mode": "raw",
-                  "raw": "{\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"39.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
-                  "options": {
-                    "raw": {
-                      "language": "json"
-                    }
-                  }
-                },
-                "url": "{{baseUrl}}/subscription"
+                "header": [],
+                "url": "{{baseUrl}}/subscription/portal",
+                "description": "Roles: any (requires an existing Stripe customer)\n\nRedirect user to the returned 'url' to manage card/invoices/cancellation via Stripe's hosted portal."
               }
             },
             {
@@ -2245,7 +2201,17 @@
               "request": {
                 "method": "PATCH",
                 "header": [],
-                "url": "{{baseUrl}}/subscription/cancel"
+                "url": "{{baseUrl}}/subscription/cancel",
+                "description": "Roles: any\n\nSchedules cancellation at period end if backed by Stripe; cancels immediately otherwise."
+              }
+            },
+            {
+              "name": "Reactivate Subscription",
+              "request": {
+                "method": "PATCH",
+                "header": [],
+                "url": "{{baseUrl}}/subscription/reactivate",
+                "description": "Roles: any\n\nReverses a scheduled cancellation before period end."
               }
             }
           ]
@@ -2649,7 +2615,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription-plan",
-                "description": "Roles: admin, super_admin\n\naudience: job_seeker | recruiter | instructor | all\nbillingInterval: month | year\nprice: string decimal e.g. '29.99'"
+                "description": "Roles: admin, super_admin\n\naudience: job_seeker | recruiter | instructor | all\nbillingInterval: month | year\nprice: string decimal e.g. '29.99'\n\nStripe sync: automatically creates a matching Stripe Product + recurring Price (stripeProductId/stripePriceId) — no need to create them by hand in the Dashboard. A plan can't be checked out against until this succeeds."
               }
             },
             {
@@ -2672,7 +2638,7 @@
                   }
                 },
                 "url": "{{baseUrl}}/subscription-plan/:id",
-                "description": "Roles: admin, super_admin"
+                "description": "Roles: admin, super_admin\n\nStripe sync: Prices are immutable, so changing price/currency/billingInterval/intervalCount creates a new Stripe Price and archives the old one. Existing subscribers keep their original price."
               }
             },
             {
@@ -2681,7 +2647,30 @@
                 "method": "DELETE",
                 "header": [],
                 "url": "{{baseUrl}}/subscription-plan/:id",
-                "description": "Roles: super_admin only\n\nSets isActive = false. Existing subscribers are unaffected."
+                "description": "Roles: super_admin only\n\nSets isActive = false and archives the plan's Stripe Price (active: false). Existing subscribers are unaffected."
+              }
+            },
+            {
+              "name": "Manual Subscribe (Admin/Testing — bypasses Stripe)",
+              "request": {
+                "method": "POST",
+                "header": [
+                  {
+                    "key": "Content-Type",
+                    "value": "application/json"
+                  }
+                ],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"userId\": \"64f1a2b3c4d5e6f7a8b9c0d1\",\n  \"planId\": \"64fba2b3c4d5e6f7a8b9c0d1\",\n  \"billingInterval\": \"month\",\n  \"intervalCount\": 1,\n  \"priceAtPurchase\": \"29.99\",\n  \"currency\": \"USD\",\n  \"autoRenew\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": "{{baseUrl}}/subscription",
+                "description": "Roles: admin, super_admin only\n\nActivates a subscription without going through Stripe (backfills, comped accounts, testing). Use 'Create Stripe Checkout Session' for real payments.\nSets user.accessStatus = 'subscribed'."
               }
             }
           ]

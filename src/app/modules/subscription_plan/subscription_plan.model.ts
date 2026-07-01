@@ -18,6 +18,8 @@ const subscriptionPlanSchema = new Schema<ISubscriptionPlan>(
     jobPostLimit: { type: Number },
     isActive: { type: Boolean, default: true },
     sortOrder: { type: Number, default: 0 },
+    stripeProductId: { type: String },
+    stripePriceId: { type: String },
   },
   { timestamps: true, versionKey: false },
 );

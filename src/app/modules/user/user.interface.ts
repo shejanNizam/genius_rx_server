@@ -32,6 +32,7 @@ export interface IUserInitial {
   blockReason?: string;
   accessStatus: AccessStatus;
   currentSubscriptionId?: Types.ObjectId;
+  stripeCustomerId?: string;
   isDeleted: boolean;
   deletedAt?: Date;
   lastLoginAt?: Date;

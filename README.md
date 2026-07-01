@@ -16,7 +16,7 @@ For the full endpoint reference (request/response shapes, screen-to-API mapping,
 | Database | MongoDB + Mongoose |
 | Cache / Real-time | Redis (+ Socket.io Redis adapter) |
 | Auth | JWT (access + refresh tokens), Passport.js (Google OAuth + local) |
-| Payments | Stripe (checkout sessions + webhooks) |
+| Payments | Stripe (subscriptions, checkout, billing portal, webhooks) |
 | File Uploads | Multer + Cloudinary |
 | Email | Nodemailer (SMTP) + EJS templates |
 | Real-time messaging | Socket.io |
@@ -87,7 +87,7 @@ src/
     │   ├── report/                   # User reports
     │   ├── moderation_log/           # Admin moderation audit trail
     │   ├── subscription_plan/        # Admin-configurable subscription tiers
-    │   ├── subscription/              # Trials, Stripe checkout, webhook, cancellation
+    │   ├── subscription/              # Trials, Stripe checkout/portal, webhook, cancel/reactivate
     │   ├── transaction/               # Payment transaction records
     │   ├── notification/              # In-app notifications
     │   ├── static_content/            # CMS pages (About, Privacy, Terms, Support)
@@ -130,7 +130,7 @@ All routes are prefixed with `/api/v1`. See [API_DOCUMENTATION.md](./API_DOCUMEN
 | Block / Report | `/block`, `/report` | User safety controls |
 | Moderation Log | `/moderation-log` | Admin action audit trail |
 | Subscription Plan | `/subscription-plan` | Admin-managed pricing tiers |
-| Subscription | `/subscription` | Free trial, Stripe checkout, Stripe webhook, cancellation |
+| Subscription | `/subscription` | Free trial, Stripe checkout/portal, Stripe webhook, cancel/reactivate |
 | Transaction | `/transaction` | Payment records |
 | Notification | `/notification` | In-app notification inbox |
 | Static Content | `/content` | CMS pages (About, Privacy, Terms, Support) |
@@ -225,7 +225,17 @@ REDIS_USERNAME=default
 REDIS_PASSWORD=your_redis_password
 ```
 
-> **Stripe webhook note:** `POST /api/v1/subscription/webhook` receives the raw request body (mounted before `express.json()`) and verifies the signature with `STRIPE_WEBHOOK_SECRET`. Point your Stripe CLI/dashboard webhook at `<your-domain>/api/v1/subscription/webhook`.
+> **Stripe setup (test mode):**
+> 1. Grab your **test-mode** secret key from the Stripe Dashboard → `STRIPE_SECRET_KEY`.
+> 2. Creating a subscription plan (`POST /subscription-plan`) automatically creates a matching Stripe Product + recurring Price — you don't need to create them by hand in the Dashboard. Updating a plan's price creates a new Price and archives the old one (Stripe Prices are immutable); deactivating a plan archives its Price.
+> 3. For local webhook testing, install the [Stripe CLI](https://stripe.com/docs/stripe-cli) and run:
+>    ```
+>    stripe listen --forward-to localhost:7000/api/v1/subscription/webhook
+>    ```
+>    Copy the `whsec_...` value it prints into `STRIPE_WEBHOOK_SECRET`. In production, create a webhook endpoint in the Dashboard pointed at `<your-domain>/api/v1/subscription/webhook` and use its signing secret instead.
+> 4. `POST /api/v1/subscription/webhook` receives the **raw** request body (parsed before `express.json()` in `app.ts`) so the signature can be verified; each Stripe event is recorded by id (`StripeEvent` collection) so retried deliveries aren't double-processed.
+> 5. Events handled: `checkout.session.completed` (activation), `customer.subscription.updated` / `.deleted` (status sync), `invoice.paid` (renewal), `invoice.payment_failed` (marks `past_due`).
+> 6. Test with Stripe's [test cards](https://stripe.com/docs/testing) (e.g. `4242 4242 4242 4242` for success, `4000 0000 0000 0341` for a decline).
 
 ---
 
@@ -274,7 +284,7 @@ npm start
 - **Vercel serverless**: Exports the Express app for Vercel's serverless runtime.
 - **Modular architecture**: Each feature is self-contained with its own controller, service, model, validation, and route.
 - **QueryBuilder**: Reusable utility for filtering, sorting, and paginating Mongoose queries.
-- **Subscription billing**: 7-day free trial per user, Stripe Checkout for paid plans, webhook-driven activation, and an `accessStatus` gate (`trial | subscribed | locked`) enforced across the API.
+- **Subscription billing**: 7-day free trial per user, real Stripe recurring subscriptions via Checkout, a self-serve Stripe Billing Portal for card updates/cancellation, webhook-driven activation/renewal/cancellation, and an `accessStatus` gate (`trial | subscribed | locked`) enforced across the API.
 - **Real-time messaging**: Socket.io (with Redis adapter for horizontal scaling) powers conversations, typing indicators, read receipts, and live notification pushes. Messaging is role-restricted — recruiters must initiate contact with job seekers; job seekers and instructors can message each other freely.
 - **ATS resume checker**: Job seekers can score their resumes for ATS compatibility.
 - **Trust & safety**: User blocking, reporting, and an admin moderation audit log.

@@ -25,6 +25,7 @@ export const userSchema = new Schema<IUser>(
       default: AccessStatus.trial,
     },
     currentSubscriptionId: { type: Schema.Types.ObjectId, ref: "Subscription" },
+    stripeCustomerId: { type: String },
     isDeleted: { type: Boolean, default: false },
     deletedAt: { type: Date },
     lastLoginAt: { type: Date },

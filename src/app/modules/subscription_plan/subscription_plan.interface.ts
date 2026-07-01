@@ -15,6 +15,8 @@ export interface ISubscriptionPlanInitial {
   jobPostLimit?: number;
   isActive: boolean;
   sortOrder?: number;
+  stripeProductId?: string;
+  stripePriceId?: string;
 }
 
 export type ISubscriptionPlan = ISubscriptionPlanInitial & Document;
