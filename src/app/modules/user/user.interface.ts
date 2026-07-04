@@ -8,15 +8,15 @@ export enum UserRole {
   super_admin = "super_admin",
 }
 
+export interface IAvatar {
+  url: string;
+  publicId: string;
+}
+
 export enum AccessStatus {
   trial = "trial",
   subscribed = "subscribed",
   locked = "locked",
-}
-
-export interface IAvatar {
-  url: string;
-  publicId: string;
 }
 
 export interface IUserInitial {

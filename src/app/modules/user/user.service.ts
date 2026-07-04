@@ -65,6 +65,16 @@ const updateUser = async (
   }
 
   if (
+    payload.role === UserRole.super_admin &&
+    decodedToken.role !== UserRole.super_admin
+  ) {
+    throw new AppError(
+      httpStatus.FORBIDDEN,
+      "Only a super admin can assign the super_admin role",
+    );
+  }
+
+  if (
     (payload.status || payload.isDeleted || payload.isEmailVerified || payload.accessStatus) &&
     isRegularRole
   ) {
